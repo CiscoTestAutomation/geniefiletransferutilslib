@@ -1,7 +1,7 @@
 Introduction
 ============
  
-The FileTransferUtils package (``FileTransferUtils``) provides various API for supporting file transfer (image, core, etc..) using different protocols such as tftp, ftp, etc..  
+The ``FileTransferUtils`` package provides various APIs for supporting file transfer (image, core, etc.) using different protocols such as tftp, ftp, etc.
 
 .. _package_installation:
 
@@ -16,9 +16,10 @@ Installation
 
 .. note::
 
-    Make sure to source the env.sh to setup the `pyATS` env.
+    Make sure to source the env.sh(bash)/env.csh(C shell) to setup the `pyATS` env.
+    For more information about pyATS installation please check the documentation_.
 
-Once installed the FileTransferUtils package can be imported using `import' 
+Once installed the ``FileTransferUtils`` package can be imported using `import` 
 
 .. code-block:: python
 
@@ -46,8 +47,11 @@ Setup the connection to remote server (in this case through SSH), instanciate th
     # Import FileTransferUtils pkg
     import filetransferutils
 
-    # Import secure shell pkg 
+    # Import Secure Shell 
     from filetransferutils.ssh import Ssh
+
+    # Import Lookup from Abstract_ pkg
+    from abstract import Lookup
 
     # setup the secure shell connection with the remove server 
     scp = Ssh(ip=server)
@@ -57,9 +61,13 @@ Setup the connection to remote server (in this case through SSH), instanciate th
     tftpobj = Lookup.from_device(device).filetransferutils.tftp.utils.Utils(
         scp, kwargs['destination'])
 
+.. note::
+
+    Check documentation for more information about Abstract_ package.
+
 Now the API can be called for various operations such as: 
 
-* copying file to device
+* Copying file to device
 
     .. code-block:: python
 
@@ -67,7 +75,7 @@ Now the API can be called for various operations such as:
                                     filename = 'file full path',
                                     location = 'running-config')
 
-* copying output of a CLI Command
+* Copying output of a CLI Command
 
 
 
@@ -77,7 +85,7 @@ Now the API can be called for various operations such as:
         tftpobj.copy_CLI_output (device='<device object>', filename='file name on the server',
                                  cli='cli to be executed on device')
 
-* copy_core
+* Copying core files
 
     .. code-block:: python
 
@@ -86,8 +94,11 @@ Now the API can be called for various operations such as:
                               timeout='timeout for the core copy', username='username (if needed, ex: ftp)',
                               password='password (if needed, ex: ftp)')
 
-* validate_server 
+* Validating the server 
 
     .. code-block:: python
 
         tftpobj.validate_server(device='<device object>', vrf='vrf name (if needed)')
+
+.. _documentation: http://wwwin-pyats.cisco.com/documentation/html/install/install.html
+.. _Abstract: http://http://wwwin-pyats.cisco.com/cisco-shared/abstract/html/

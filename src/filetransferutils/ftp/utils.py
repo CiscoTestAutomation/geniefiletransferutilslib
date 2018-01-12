@@ -43,16 +43,15 @@ class Utils(object):
                             vrf='management', cmd=None, delay=1, tries=1):
         pass
 
-    def save_output(self, device, filename, cli, vrf='management', tries=1,
+    def copy_CLI_output(self, device, filename, cli, vrf='management', tries=1,
                     delay=1, cmd=None):
         pass
 
-    def save_core(self, device, location, core, server, destination, port=None,
-                  vrf=None, tries=1, delay=1, cmd=None,
-                  timeout=None, invalid=None, **kwargs):
+    def copy_core(self, device, location, core, vrf=None, tries=1, delay=1,
+                  cmd=None, timeout=None, invalid=None, **kwargs):
         pass
 
-    def basic_check(self, device, vrf='management'):
+    def validate_server(self, device, vrf='management'):
         pass
 
     def _send_cli_to_device(self, device, cli, invalid=None, timeout=300, **kwargs):

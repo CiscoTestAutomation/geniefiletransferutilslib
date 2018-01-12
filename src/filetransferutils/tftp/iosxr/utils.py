@@ -142,7 +142,7 @@ class Utils(tftputils):
 
         return super().copy_file_to_device(cmd=cmd, *args, **kwargs)
 
-    def save_output(self, filename, cli, *args, **kwargs):
+    def copy_CLI_output(self, filename, cli, *args, **kwargs):
         '''Save a cli output to a file outside of the device via tftp
 
         Args:
@@ -166,7 +166,7 @@ class Utils(tftputils):
             Save the output of a particular command to the file
             /auto/my_path/show_mod
 
-            >>> tftp.save_output(device = <device object>,
+            >>> tftp.copy_CLI_output(device = <device object>,
             ...                  filename = 'show_mod',
             ...                  cli = 'show module')
         '''
@@ -175,10 +175,10 @@ class Utils(tftputils):
         cmd = "{cli} | file tftp://{ip}/{file}"\
                .format(cli=cli, ip=self.scp.ip, file=file)
 
-        return super().save_output(filename=filename, cli=cli, cmd=cmd, *args,
+        return super().copy_CLI_output(filename=filename, cli=cli, cmd=cmd, *args,
                                    **kwargs)
 
-    def basic_check(self, *args, **kwargs):
+    def validate_server(self, *args, **kwargs):
         ''' Make sure that the given tftp information is valid
 
 
@@ -205,7 +205,7 @@ class Utils(tftputils):
             ...                  ip = '10.10.10.10',
             ...                  location = '/tftpboot')
 
-            >>> tftp.basic_check(device = <device object>)
+            >>> tftp.validate_server(device = <device object>)
         '''
 
         logger.info('Verifying if TFTP can be reached and if a temp file can '

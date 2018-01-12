@@ -145,7 +145,7 @@ class Utils(object):
             os.remove(temp_filename)
         return os.path.basename(temp_filename)
 
-    def save_output(self, device, filename, cli, vrf='management', tries=1,
+    def copy_CLI_output(self, device, filename, cli, vrf='management', tries=1,
                     delay=1, cmd=None):
         '''Save a cli output to a file outside of the device via tftp
 
@@ -170,7 +170,7 @@ class Utils(object):
             Save the output of a particular command to the file
             /auto/my_path/show_mod
 
-            >>> tftp.save_output(device = <device object>,
+            >>> tftp.copy_CLI_output(device = <device object>,
             ...                  filename = 'show_mod',
             ...                  cli = 'show module')
         '''
@@ -204,7 +204,7 @@ class Utils(object):
                                         'saved to {filename}'\
                                         .format(filename=filename))
 
-    def save_core(self, device, location, core, vrf=None, tries=1, delay=1,
+    def copy_core(self, device, location, core, vrf=None, tries=1, delay=1,
                   cmd=None, timeout=None, invalid=None, **kwargs):
         '''Save a core to a tftp location
 
@@ -229,7 +229,7 @@ class Utils(object):
             Save the output of a particular command to the file
             /auto/my_path/show_mod
 
-            >>> tftp.save_core(device = <device object>,
+            >>> tftp.copy_core(device = <device object>,
             ...                core = '//1//10616',
                                filename = 'mycore')
         '''
@@ -258,7 +258,7 @@ class Utils(object):
         except Exception as e:
             raise Exception(e)
 
-    def basic_check(self, device, vrf='management', **kwargs):
+    def validate_server(self, device, vrf='management', **kwargs):
         ''' Make sure that the given tftp information is valid
 
 
@@ -285,7 +285,7 @@ class Utils(object):
             ...                  ip = '10.10.10.10',
             ...                  location = '/tftpboot')
 
-            >>> tftp.basic_check(device = <device object>)
+            >>> tftp.validate_server(device = <device object>)
         '''
         logger.info('Verifying if TFTP can be reached and if a temp file can '
                     'be created')

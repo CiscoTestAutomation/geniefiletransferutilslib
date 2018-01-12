@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 class Utils(tftputils):
 
-    def save_core(self, *args, **kwargs):
+    def copy_core(self, *args, **kwargs):
         '''Save a core to a tftp location
 
         Args:
@@ -41,16 +41,16 @@ class Utils(tftputils):
             Save the output of a particular command to the file
             /auto/my_path/show_mod
 
-            >>> tftp.save_core(device = <device object>,
+            >>> tftp.copy_core(device = <device object>,
             ...                core = '//1//10616',
                                filename = 'mycore')
         '''
 
         file = os.path.join(self.directory, kwargs['destination'])
 
-        return super().save_core(file=file, *args, **kwargs)
+        return super().copy_core(file=file, *args, **kwargs)
 
-    def basic_check(self, device, **kwargs):
+    def validate_server(self, device, **kwargs):
         ''' Make sure that the given tftp information is valid
 
 
@@ -77,7 +77,7 @@ class Utils(tftputils):
             ...                  ip = '10.10.10.10',
             ...                  location = '/tftpboot')
 
-            >>> tftp.basic_check(device = <device object>)
+            >>> tftp.validate_server(device = <device object>)
         '''
 
         # prepare the temp file name
@@ -89,4 +89,4 @@ class Utils(tftputils):
 
         file = os.path.join(self.directory, filename)
 
-        return super().basic_check(device=device, file=file, **kwargs)
+        return super().validate_server(device=device, file=file, **kwargs)

@@ -58,13 +58,13 @@ class test_filetransferutils(unittest.TestCase):
 		# Create file on the server
 		f = open(os.path.join('/auto/tftp-ssr/', 'test_file_name.py'), 'w')
 
-		self.tftpcls.save_output(device=self.device, filename='test_file_name.py',
+		self.tftpcls.copy_CLI_output(device=self.device, filename='test_file_name.py',
 			cli='show version')
 
 		# Delete the temp file created
 		os.remove('/auto/tftp-ssr/test_file_name.py')
 
-	def test_save_core(self):
+	def test_copy_core(self):
 
 		self.device.execute = Mock()
 		self.device.execute.side_effect = self.mapper
@@ -72,7 +72,7 @@ class test_filetransferutils(unittest.TestCase):
 		# Create core on the server
 		f = open(os.path.join('/auto/tftp-ssr/', 'corefile.core.gz'), 'w')
 
-		self.tftpcls.save_core(device=self.device,
+		self.tftpcls.copy_core(device=self.device,
 			location='crashinfo:',
 			core='corefile.core.gz',
 			server='',
@@ -81,7 +81,7 @@ class test_filetransferutils(unittest.TestCase):
 		# Delete the temp file created
 		os.remove('/auto/tftp-ssr/corefile.core.gz')
 
-	def test_basic_check(self):
+	def test_validate_server(self):
 
 		self.device.execute = Mock()
 		self.device.execute.side_effect = self.mapper
@@ -89,9 +89,9 @@ class test_filetransferutils(unittest.TestCase):
 		# Create core on the server
 		f = open(os.path.join('/auto/tftp-ssr/', 'aDevice'), 'w')
 
-		self.tftpcls.basic_check(device=self.device, filename=self.device.name)
+		self.tftpcls.validate_server(device=self.device, filename=self.device.name)
 
-		# basic_check method already deletes the temp created file
+		# validate_server method already deletes the temp created file
 
 	def test_copy_file_to_device(self):
 

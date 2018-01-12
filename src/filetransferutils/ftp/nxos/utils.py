@@ -21,5 +21,5 @@ logger = logging.getLogger(__name__)
 
 
 class Utils(ftputils):
-	def save_core(self, *args, **kwargs):
+	def copy_core(self, *args, **kwargs):
 		pass

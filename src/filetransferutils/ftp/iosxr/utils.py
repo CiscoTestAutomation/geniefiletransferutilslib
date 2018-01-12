@@ -27,10 +27,10 @@ class Utils(ftputils):
 	def copy_file_to_device(self, *args, **kwargs):
 		pass
 
-	def save_output(self, filename, cli, *args, **kwargs):
+	def copy_CLI_output(self, filename, cli, *args, **kwargs):
 		pass
 
-	def basic_check(self, *args, **kwargs):
+	def validate_server(self, *args, **kwargs):
 		pass
 
 	def _configure_cli_on_device(self, device, cli, invalid=None, **kwargs):

@@ -12,6 +12,5 @@ January 12
 
 
 Features:
-^^^^^^^^^
 
  * Initial Commit of the package.
