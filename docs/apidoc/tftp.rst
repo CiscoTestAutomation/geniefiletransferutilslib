@@ -1,5 +1,5 @@
-Tftp implementation
-===================
+Tftp package 
+============
 
 .. automodule:: filetransferutils.tftp.utils
     :members:
