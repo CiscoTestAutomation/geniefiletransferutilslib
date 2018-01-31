@@ -2,7 +2,11 @@
 import time
 import paramiko
 import getpass
+import logging
 from scp import SCPClient
+
+# Initialize the logger
+logger = logging.getLogger(__name__)
 
 
 class Ssh(object):
