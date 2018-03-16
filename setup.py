@@ -177,10 +177,13 @@ setup(
 
     # console entry point
     entry_points = {
+        'ats.utils.fileutils.plugins' : [
+            'iosxe = filetransferutils.plugins.iosxe',
+        ],
     },
 
     # package dependencies
-    install_requires =  ['abstract','scp'],
+    install_requires =  [],
 
     # any additional groups of dependencies.
     # install using: $ pip install -e .[dev]
