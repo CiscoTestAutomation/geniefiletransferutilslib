@@ -16,6 +16,8 @@ import subprocess
 from setuptools import setup, find_packages, Command
 from setuptools.command.test import test
 
+from ats.utils.fileutils import ENTRYPOINT_GROUP
+
 pkg_name = 'filetransferutils'
 
 class CleanCommand(Command):
@@ -177,7 +179,7 @@ setup(
 
     # console entry point
     entry_points = {
-        'ats.utils.fileutils.plugins' : [
+        ENTRYPOINT_GROUP : [
             'iosxe = filetransferutils.plugins.iosxe',
         ],
     },
