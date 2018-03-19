@@ -1,6 +1,6 @@
-""" File utils base class for FTP on Linux servers. """
+""" File utils base class for FTP on IOSXE devices. """
 
-from ats.utils.fileutils import FileUtils as FileUtilsXEBase
+from ..fileutils import FileUtils as FileUtilsXEBase
 
 class FileUtils(FileUtilsXEBase):
-    pass
+	pass
