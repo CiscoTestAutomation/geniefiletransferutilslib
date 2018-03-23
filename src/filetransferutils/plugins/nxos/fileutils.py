@@ -1,4 +1,4 @@
-""" File utils base class for XE devices. """
+""" File utils base class for NXOS devices. """
 
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
@@ -7,14 +7,14 @@ from .. import FileUtils as FileUtilsDeviceBase
 from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
 
 # Dir parser
-from parser.iosxe.show_platform import Dir
+from parser.nxos.show_platform import Dir
 
 
 class FileUtils(FileUtilsDeviceBase):
 
-    def copyfile(self, from_file_url, to_file_url, timeout_seconds, *args,
-        **kwargs):
-        """ Copy a file to/from IOSXE device
+    def copyfile(self, from_file_url, to_file_url, timeout_seconds,
+        vrf='management', *args, **kwargs):
+        """ Copy a file to/from NXOS device
 
         Copy any file to/from a device to any location supported on the
         device and on the running-configuration.
@@ -43,7 +43,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # copy file from device to server
@@ -65,8 +65,9 @@ class FileUtils(FileUtilsDeviceBase):
             ...     timeout_seconds='300', device=device)
         """
 
-        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
-        cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
+        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management
+        cmd = 'copy {f} {t} vrf {vrf}'.format(f=from_file_url, t=to_file_url,
+            vrf=vrf)
 
         super().copyfile(from_file_url, to_file_url, timeout_seconds, cmd,
             *args, **kwargs)
@@ -102,7 +103,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # list all files on the device directory 'flash:'
@@ -119,17 +120,10 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-
         dir_output = super().dir(from_directory_url, timeout_seconds, Dir,
             *args, **kwargs)
 
-        # Extract the files location requested
-        output = self.parse_url(from_directory_url)
-
-        # Construct the directory name
-        directory = output.scheme + ":/"
-
-        return dir_output['dir'][directory]['files']
+        return dir_output['files']
 
     def stat(self, file_url, timeout_seconds, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
@@ -160,7 +154,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # list the file details on the device 'flash:' directory
@@ -212,7 +206,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # delete a specific file on device directory 'flash:'
@@ -254,17 +248,17 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
-            # rename the file on the device 'flash:' directory
-            >>> fu_device.renamefile(file_url='flash:memleak.tcl',
+            # rename the file on the device 'bootflash:' directory
+            >>> fu_device.renamefile(file_url='bootflash:memleak.tcl',
             ...     to_file_url='memleak_backup.tcl'
             ...     timeout_seconds=300, device=device)
 
         """
-        # rename bootflash:memleak.tcl memleak_j.tcl
-        cmd = 'rename {f} {u}'.format(f=from_file_url, u=to_file_url)
+        # move bootflash:memleak.tcl memleak_j.tcl
+        cmd = 'move {f} {u}'.format(f=from_file_url, u=to_file_url)
 
         super().renamefile(from_file_url, to_file_url, timeout_seconds, cmd, 
             *args, **kwargs)
@@ -292,7 +286,8 @@ class FileUtils(FileUtilsDeviceBase):
         raise NotImplementedError("The fileutils module {} "
             "does not implement chmod.".format(self.__module__))
 
-    def validateserver(self, file_path, timeout_seconds, *args, **kwargs):
+    def validateserver(self, file_path, timeout_seconds, vrf='management', 
+        *args, **kwargs):
         ''' Make sure that the given server information is valid
 
 
@@ -305,8 +300,10 @@ class FileUtils(FileUtilsDeviceBase):
             cmd (`str`):  Command to be executed on the device 
             file_path (`str`):  File path including the protocol, server and 
                 file location.
-            timeout_seconds: `str`
+            timeout_seconds (`str`):
                 The number of seconds to wait before aborting the operation.
+            vrf (`str`):
+                Vrf value to be used during execution. Default is `management`
 
         Returns:
             `None`
@@ -324,13 +321,13 @@ class FileUtils(FileUtilsDeviceBase):
 
             # Validate server connectivity
             >>> fu_device.validateserver(
-            ...     file_path='ftp://10.1.6.242//auto/tftp-ssr/show_clock',
+            ...     file_path='ftp://10.1.7.250//auto/tftp-ssr/show_clock',
             ...     timeout_seconds=300, device=device)
         '''
 
         # Patch up the command together
-        # show clock | redirect ftp://10.1.6.242//auto/tftp-ssr/show_clock
-        cli = "show clock | redirect {e}".format(e=file_path)
+        # show clock > tftp://10.1.0.213//auto/ftp-ssr/show_clock vrf management
+        cli = "show clock > {e} vrf {vrf}".format(e=file_path, vrf=vrf)
 
         super().validateserver(cli, timeout_seconds, file_path, *args,
             **kwargs)

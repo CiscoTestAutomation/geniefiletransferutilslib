@@ -1,4 +1,4 @@
-""" File utils base class for XE devices. """
+""" File utils base class for IOSXR devices. """
 
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
@@ -7,14 +7,14 @@ from .. import FileUtils as FileUtilsDeviceBase
 from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
 
 # Dir parser
-from parser.iosxe.show_platform import Dir
+from parser.iosxr.show_platform import Dir
 
 
 class FileUtils(FileUtilsDeviceBase):
 
-    def copyfile(self, from_file_url, to_file_url, timeout_seconds, *args,
-        **kwargs):
-        """ Copy a file to/from IOSXE device
+    def copyfile(self, from_file_url, to_file_url, timeout_seconds,
+        vrf='management', *args, **kwargs):
+        """ Copy a file to/from IOSXR device
 
         Copy any file to/from a device to any location supported on the
         device and on the running-configuration.
@@ -43,7 +43,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for IOSXR device
             >>> fu_device = FileUtils.from_device(device)
 
             # copy file from device to server
@@ -65,7 +65,6 @@ class FileUtils(FileUtilsDeviceBase):
             ...     timeout_seconds='300', device=device)
         """
 
-        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
         cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
 
         super().copyfile(from_file_url, to_file_url, timeout_seconds, cmd,
@@ -102,7 +101,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for IOSXR device
             >>> fu_device = FileUtils.from_device(device)
 
             # list all files on the device directory 'flash:'
@@ -119,17 +118,13 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-
         dir_output = super().dir(from_directory_url, timeout_seconds, Dir,
             *args, **kwargs)
 
-        # Extract the files location requested
-        output = self.parse_url(from_directory_url)
-
-        # Construct the directory name
-        directory = output.scheme + ":/"
-
-        return dir_output['dir'][directory]['files']
+        # Current dir iosxr parser doesn't parse files, when it is updated
+        # we need to update the below returned result according to the
+        # parser schema
+        return dir_output
 
     def stat(self, file_url, timeout_seconds, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
@@ -160,7 +155,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for IOSXR device
             >>> fu_device = FileUtils.from_device(device)
 
             # list the file details on the device 'flash:' directory
@@ -178,12 +173,11 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-        files = super().stat(file_url, timeout_seconds, *args, **kwargs)
+        file_details = super().stat(file_url, timeout_seconds, *args, **kwargs)
 
-        # Extract the file name requested
-        output = self.parse_url(file_url)
-        file_details = files[output.path]
-
+        # Current dir iosxr parser doesn't parse files, when it is updated
+        # we need to update the below returned result according to the
+        # parser schema
         return file_details
 
     def deletefile(self, file_url, timeout_seconds, *args, **kwargs):
@@ -212,12 +206,12 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for IOSXR device
             >>> fu_device = FileUtils.from_device(device)
 
-            # delete a specific file on device directory 'flash:'
+            # delete a specific file on device directory 'disk0:'
             >>> directory_output = fu_device.deletefile(
-            ...     file_url='flash:memleak_bckp.tcl',
+            ...     file_url='disk0:memleak_bckp.tcl',
             ...     timeout_seconds=300, device=device)
 
         """
@@ -254,7 +248,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for IOSXR device
             >>> fu_device = FileUtils.from_device(device)
 
             # rename the file on the device 'flash:' directory
@@ -263,11 +257,9 @@ class FileUtils(FileUtilsDeviceBase):
             ...     timeout_seconds=300, device=device)
 
         """
-        # rename bootflash:memleak.tcl memleak_j.tcl
-        cmd = 'rename {f} {u}'.format(f=from_file_url, u=to_file_url)
 
-        super().renamefile(from_file_url, to_file_url, timeout_seconds, cmd, 
-            *args, **kwargs)
+        raise NotImplementedError("The fileutils module {} "
+            "does not implement renamefile.".format(self.__module__))
 
     def chmod(self, file_url, mode, timeout_seconds, *args, **kwargs):
         """ Change file permissions
@@ -329,8 +321,8 @@ class FileUtils(FileUtilsDeviceBase):
         '''
 
         # Patch up the command together
-        # show clock | redirect ftp://10.1.6.242//auto/tftp-ssr/show_clock
-        cli = "show clock | redirect {e}".format(e=file_path)
+        # show clock | file ftp://10.1.6.242//auto/tftp-ssr/show_clock
+        cli = "show clock | file {e}".format(e=file_path)
 
         super().validateserver(cli, timeout_seconds, file_path, *args,
             **kwargs)

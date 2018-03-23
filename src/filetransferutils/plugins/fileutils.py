@@ -1,20 +1,28 @@
-""" File utils base class for XE devices. """
+""" File utils common base class """
+# Logging
+import logging
 
 # Parent inheritance
-from .. import FileUtils as FileUtilsDeviceBase
+from .. import FileUtils as FileUtilsCommonDeviceBase
+
+# Server FileUtils core implementation
+from ats.utils.fileutils import FileUtils as server
 
 # filemode_to_mode
 from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
 
 # Dir parser
-from parser.iosxe.show_platform import Dir
+from parser.nxos.show_platform import Dir
+
+# Initialize the logger
+logger = logging.getLogger(__name__)
 
 
-class FileUtils(FileUtilsDeviceBase):
+class FileUtils(FileUtilsCommonDeviceBase):
 
-    def copyfile(self, from_file_url, to_file_url, timeout_seconds, *args,
+    def copyfile(self, from_file_url, to_file_url, timeout_seconds, cmd, *args,
         **kwargs):
-        """ Copy a file to/from IOSXE device
+        """ Copy a file to/from NXOS device
 
         Copy any file to/from a device to any location supported on the
         device and on the running-configuration.
@@ -43,7 +51,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # copy file from device to server
@@ -65,13 +73,14 @@ class FileUtils(FileUtilsDeviceBase):
             ...     timeout_seconds='300', device=device)
         """
 
-        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
-        cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
+        try:
+            self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
+                **kwargs)
+        except Exception as e:
+            raise type(e)('{}'.format(e))
 
-        super().copyfile(from_file_url, to_file_url, timeout_seconds, cmd,
-            *args, **kwargs)
-
-    def dir(self, from_directory_url, timeout_seconds, *args, **kwargs):
+    def dir(self, from_directory_url, timeout_seconds, dir_output, *args,
+        **kwargs):
         """ Retrieve filenames contained in a directory.
 
         Do not recurse into subdirectories, only list files at the top level
@@ -102,7 +111,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # list all files on the device directory 'flash:'
@@ -119,17 +128,22 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
+        # Extract device from the keyword arguments, if not passed raise an
+        # AttributeError
+        if 'device' in kwargs:
+            device = kwargs['device']
+        else:
+            raise AttributeError("Devisce object is missing, can't proceed with"
+                             " execution")
 
-        dir_output = super().dir(from_directory_url, timeout_seconds, Dir,
-            *args, **kwargs)
+        # Call the parser
+        try:
+            obj = dir_output(device=device)
+            parsed_output = obj.parse()
+        except Exception as e:
+            raise type(e)('{}'.format(e))
 
-        # Extract the files location requested
-        output = self.parse_url(from_directory_url)
-
-        # Construct the directory name
-        directory = output.scheme + ":/"
-
-        return dir_output['dir'][directory]['files']
+        return parsed_output
 
     def stat(self, file_url, timeout_seconds, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
@@ -160,7 +174,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # list the file details on the device 'flash:' directory
@@ -178,13 +192,18 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-        files = super().stat(file_url, timeout_seconds, *args, **kwargs)
+        # Extract device from the keyword arguments, if not passed raise an
+        # AttributeError
+        if 'device' in kwargs:
+            device = kwargs['device']
+        else:
+            raise AttributeError("Devisce object is missing, can't proceed with"
+                             " execution")
 
-        # Extract the file name requested
-        output = self.parse_url(file_url)
-        file_details = files[output.path]
+        parsed_output = self.dir(from_directory_url=file_url,
+            timeout_seconds=timeout_seconds, device=device)
 
-        return file_details
+        return parsed_output
 
     def deletefile(self, file_url, timeout_seconds, *args, **kwargs):
         """ Delete a file
@@ -212,7 +231,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # delete a specific file on device directory 'flash:'
@@ -222,10 +241,17 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-        super().deletefile(file_url, timeout_seconds, *args, **kwargs)
+        # delete flash:memleak.tcl
+        cmd = 'delete {f}'.format(f=file_url)
 
-    def renamefile(self, from_file_url, to_file_url, timeout_seconds, *args,
-        **kwargs):
+        try:
+            self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
+                **kwargs)
+        except Exception as e:
+            raise type(e)('{}'.format(e))
+
+    def renamefile(self, from_file_url, to_file_url, timeout_seconds, cmd,
+        *args, **kwargs):
         """ Rename a file
 
         Parameters
@@ -254,7 +280,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for IOSXE device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # rename the file on the device 'flash:' directory
@@ -263,11 +289,13 @@ class FileUtils(FileUtilsDeviceBase):
             ...     timeout_seconds=300, device=device)
 
         """
-        # rename bootflash:memleak.tcl memleak_j.tcl
-        cmd = 'rename {f} {u}'.format(f=from_file_url, u=to_file_url)
 
-        super().renamefile(from_file_url, to_file_url, timeout_seconds, cmd, 
-            *args, **kwargs)
+        try:
+            self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
+                **kwargs)
+        except Exception as e:
+            raise type(e)('{}'.format(e))
+
 
     def chmod(self, file_url, mode, timeout_seconds, *args, **kwargs):
         """ Change file permissions
@@ -289,10 +317,15 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
+        # To be used when implemented
+        # import stat as libstat
+        # stat.filemode(output.st_mode)
+        # libstat.filemode(mode)
+
         raise NotImplementedError("The fileutils module {} "
             "does not implement chmod.".format(self.__module__))
 
-    def validateserver(self, file_path, timeout_seconds, *args, **kwargs):
+    def validateserver(self, cmd, timeout_seconds, file_path, *args, **kwargs):
         ''' Make sure that the given server information is valid
 
 
@@ -324,13 +357,34 @@ class FileUtils(FileUtilsDeviceBase):
 
             # Validate server connectivity
             >>> fu_device.validateserver(
-            ...     file_path='ftp://10.1.6.242//auto/tftp-ssr/show_clock',
+            ...     file_path='ftp://10.1.7.250//auto/tftp-ssr/show_clock',
             ...     timeout_seconds=300, device=device)
         '''
 
-        # Patch up the command together
-        # show clock | redirect ftp://10.1.6.242//auto/tftp-ssr/show_clock
-        cli = "show clock | redirect {e}".format(e=file_path)
+        logger.info('Verifying if server can be reached and if a temp file can '
+                    'be created')
 
-        super().validateserver(cli, timeout_seconds, file_path, *args,
-            **kwargs)
+        # Send the command
+        try:
+            self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
+                **kwargs)
+        except Exception as e:
+            raise type(e)('TFTP/FTP server is unreachable') from e
+
+        # Instantiate a server
+        futlinux = server(testbed=self.testbed)
+
+        # Check server created file
+        try:
+            futlinux.check_file(file_path)
+        except Exception as e:
+            raise type(e)("Server created file can't be checked") from e
+
+        # Delete server created file
+        try:
+            futlinux.deletefile(file_path)
+        except Exception as e:
+            raise type(e)("Server created file can't be deleted") from e
+
+        # Great success!
+        logger.info("Server is ready to be used")

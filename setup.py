@@ -181,6 +181,8 @@ setup(
     entry_points = {
         ENTRYPOINT_GROUP : [
             'iosxe = filetransferutils.plugins.iosxe',
+            'nxos = filetransferutils.plugins.nxos',
+            'iosxr = filetransferutils.plugins.iosxr',
         ],
     },
 
