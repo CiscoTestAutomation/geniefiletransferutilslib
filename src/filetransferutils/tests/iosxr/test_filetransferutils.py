@@ -30,7 +30,8 @@ class test_filetransferutils(unittest.TestCase):
     )
 
     dir_output = {'dir':
-        {'total_free_bytes': '938376 kbytes', 'dir_name': '/misc/scratch', 'total_bytes': '1012660 kbytes'}}
+        {'total_free_bytes': '938376 kbytes', 'dir_name': '/misc/scratch',
+         'total_bytes': '1012660 kbytes'}}
 
 
     # Mock device output
@@ -75,16 +76,16 @@ class test_filetransferutils(unittest.TestCase):
         Writing /auto/tftp-ssr/show_clock 
     '''}
 
-    raw5 = 'INFO:ats.utils.fileutils.plugins.linux.fileutils:Retrieving details for file ftp://10.1.7.250//auto/tftp-ssr/show_clock ...'
-
-    raw6 = 'INFO:ats.utils.fileutils.plugins.linux.fileutils:Deleting file ftp://10.1.7.250//auto/tftp-ssr/show_clock ...'
+    raw5 = {'futlinux.check_file.return_value': '',
+        'futlinux.deletefile.return_value': ''}
 
     outputs = {}
-    outputs['copy disk0:/fake_config_2.tcl ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl'] = raw1
+    outputs['copy disk0:/fake_config_2.tcl '
+        'ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl'] = raw1
     outputs['dir'] = raw2
     outputs['delete disk0:fake_config.tcl'] = raw3
-    outputs['rename flash:memleak.tcl new_file.tcl'] = raw4
-    outputs['show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock'] = raw5
+    outputs['show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock'] = \
+        raw4
 
     def mapper(self, key, timeout=None, reply= None):
         return self.outputs[key]
@@ -142,16 +143,16 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
 
-        with self.assertRaisesRegex(NotImplementedError,
-                "The fileutils module filetransferutils.plugins.iosxr.fileutils does not implement renamefile."):
+        with self.assertRaisesRegex(
+            NotImplementedError, "The fileutils module filetransferutils."
+            "plugins.iosxr.fileutils does not implement renamefile."):
             self.fu_device.renamefile(from_file_url='disk0:fake_config.tcl',
               to_file_url='memleak.tcl',
                 timeout_seconds=300, device=self.device)
 
-    # TODO: Finalize after fixing the patch calls
-    @patch('filetransferutils.plugins.FileUtils.validateserver.futlinux.check_file', return_value=raw6)
-    # @patch('filetransferutils.plugins.fileutils.FileUtils.validateserver.futlinux.deletefile', return_value=raw7)
-    def test_validateserver(self):
+    @patch('filetransferutils.plugins.fileutils.FileUtils.validateserver',
+        return_value=raw5)
+    def test_validateserver(self, raw5):
 
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper

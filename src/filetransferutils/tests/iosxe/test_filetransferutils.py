@@ -181,16 +181,17 @@ class test_filetransferutils(unittest.TestCase):
         Writing /auto/tftp-ssr/show_clock 
     '''}
 
-    raw6 = 'INFO:ats.utils.fileutils.plugins.linux.fileutils:Retrieving details for file ftp://10.1.7.250//auto/tftp-ssr/show_clock ...'
-
-    raw7 = 'INFO:ats.utils.fileutils.plugins.linux.fileutils:Deleting file ftp://10.1.7.250//auto/tftp-ssr/show_clock ...'
+    raw6 = {'futlinux.check_file.return_value': '',
+      'futlinux.deletefile.return_value': ''}
 
     outputs = {}
-    outputs['copy flash:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl'] = raw1
+    outputs['copy flash:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl']\
+      = raw1
     outputs['dir'] = raw2
     outputs['delete flash:memleak.tcl'] = raw3
     outputs['rename flash:memleak.tcl new_file.tcl'] = raw4
-    outputs['show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock'] = raw5
+    outputs['show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock'] = \
+      raw5
 
     def mapper(self, key, timeout=None, reply= None):
         return self.outputs[key]
@@ -229,7 +230,8 @@ class test_filetransferutils(unittest.TestCase):
         file_details = self.fu_device.stat(file_url='flash:memleak.tcl',
           timeout_seconds=300, device=self.device)
 
-        self.assertEqual(file_details['last_modified_date'], 'Mar 20 2018 10:26:01 +00:00')
+        self.assertEqual(file_details['last_modified_date'],
+          'Mar 20 2018 10:26:01 +00:00')
         self.assertEqual(file_details['permissions'], '-rw-')
         self.assertEqual(file_details['index'], '69705')
         self.assertEqual(file_details['size'], '104260')
@@ -251,10 +253,9 @@ class test_filetransferutils(unittest.TestCase):
           to_file_url='new_file.tcl',
           timeout_seconds=300, device=self.device)
 
-    # TODO: Finalize after fixing the patch calls
-    @patch('..fileutils.FileUtils.validateserver.futlinux.check_file', return_value=raw6)
-    # @patch('filetransferutils.plugins.FileUtils.validateserver.futlinux.deletefile', return_value=raw7)
-    def test_validateserver(self):
+    @patch('filetransferutils.plugins.fileutils.FileUtils.validateserver',
+        return_value=raw6)
+    def test_validateserver(self, raw6):
 
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
