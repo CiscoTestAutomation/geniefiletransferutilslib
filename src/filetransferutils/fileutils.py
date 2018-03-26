@@ -11,18 +11,20 @@ from ats.utils.fileutils import FileUtils as FileUtilsBase
 
 class FileUtils(FileUtilsBase):
 
-    def send_cli_to_device(self, cli, invalid=None, timeout_seconds=300,
-    	**kwargs):
+    def send_cli_to_device(self, cli, used_server, invalid=None,
+      timeout_seconds=300, **kwargs):
         """ Send command to a particular device and deal with its result
 
         Args:
         -----
             cli: `str`
-            	Full command to be executed on the device
+              Full command to be executed on the device
             invalid: `str`
-            	Any invalid patterns need to be caught during execution
+              Any invalid patterns need to be caught during execution
             timeout_seconds: `str`
-	            The number of seconds to wait before aborting the operation.
+              The number of seconds to wait before aborting the operation.
+            used_server: `str`
+              Server address/name
 
         Returns:
         --------
@@ -39,42 +41,34 @@ class FileUtils(FileUtilsBase):
 
         Examples:
         ---------
-			# FileUtils
-			>>> from ..fileutils import FileUtils
+      # FileUtils
+      >>> from ..fileutils import FileUtils
 
-        	# copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
-        	>>> cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
+          # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
+          >>> cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
 
-        	>>> FileUtils.send_cli_to_device(cli=cmd,
-        	... 	timeout_seconds=timeout_seconds, **kwargs)
+          >>> FileUtils.send_cli_to_device(cli=cmd,
+          ...   timeout_seconds=timeout_seconds, **kwargs)
         """
 
         # Extract device from the keyword arguments, if not passed raise an
         # AttributeError
         if 'device' in kwargs:
-        	device = kwargs['device']
+            device = kwargs['device']
         else:
             raise AttributeError("Device object is missing, can't proceed with"
                              " execution")
 
         # Extracting username and password to be used during device calls
-        if 'username' in kwargs and 'password' in kwargs:
-            username=kwargs['username']
-            password=kwargs['password']
-        elif device.testbed.servers:
-        	# Assuming testbed file server is the same one passed by the user
-	        for server in device.testbed.servers:
-	        	if 'username' in device.testbed.servers[server]:
-	        		username = device.testbed.servers[server]['username']
-	        	if 'password' in device.testbed.servers[server]:
-	        		password = device.testbed.servers[server]['password']
+        if used_server:
+            username, password = self.get_auth(used_server)
         else:
-            username = None
-            password = None
+            raise AttributeError("Server is missing, can't proceed with"
+                             " execution")
 
         # Checking if user passed any extra invalid patterns
         if 'invalid' in kwargs:
-	        invalid = kwargs['invalid']
+            invalid = kwargs['invalid']
 
         # Create unicon dialog
         dialog = Dialog([
@@ -130,7 +124,7 @@ class FileUtils(FileUtilsBase):
             # Checking for the error/fail patterns, raise an exception if found
             for word in fail_msg:
                 if word in output:
-                    raise ValueError('ftp operation failed with the following '
+                    raise ValueError('Operation failed with the following '
                                      'reason: {line}'.format(line=word))
         except Exception as e:
             raise type(e)('{}'.format(e))
@@ -143,7 +137,7 @@ class FileUtils(FileUtilsBase):
         Args:
         -----
             url: `str`
-            	Full url to be parsed
+              Full url to be parsed
 
         Returns:
         --------
@@ -152,23 +146,23 @@ class FileUtils(FileUtilsBase):
 
         Raises
         ------
-        	None
+          None
 
         Examples:
         ---------
-			# FileUtils
-			>>> from ..fileutils import FileUtils
+      # FileUtils
+      >>> from ..fileutils import FileUtils
 
-			# Extract the file name and location
-        	>>> output = FileUtils.parse_url(file_url)
-        		ParseResult(scheme='flash', netloc='', path='memleak.tcl',
-        					params='', query='', fragment='')
+      # Extract the file name and location
+          >>> output = FileUtils.parse_url(file_url)
+            ParseResult(scheme='flash', netloc='', path='memleak.tcl',
+                  params='', query='', fragment='')
 
-        	>>> output.scheme
-        	... 	'flash'
+          >>> output.scheme
+          ...   'flash'
 
-        	>>> output.path
-        	... 	'memleak.tcl'
+          >>> output.path
+          ...   'memleak.tcl'
 
         """
         parsed_url = urlparse(url)

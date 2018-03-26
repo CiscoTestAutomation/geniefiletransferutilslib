@@ -12,7 +12,7 @@ from parser.nxos.show_platform import Dir
 
 class FileUtils(FileUtilsDeviceBase):
 
-    def copyfile(self, from_file_url, to_file_url, timeout_seconds,
+    def copyfile(self, from_file_url, to_file_url, timeout_seconds=300,
         vrf='management', *args, **kwargs):
         """ Copy a file to/from NXOS device
 
@@ -43,7 +43,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # copy file from device to server
@@ -69,10 +69,21 @@ class FileUtils(FileUtilsDeviceBase):
         cmd = 'copy {f} {t} vrf {vrf}'.format(f=from_file_url, t=to_file_url,
             vrf=vrf)
 
-        super().copyfile(from_file_url, to_file_url, timeout_seconds, cmd,
+        # Extract the server address to be used later for authentication
+        new_list = [from_file_url, to_file_url]
+        for item in new_list:
+            parsed = self.parse_url(item)
+            if parsed.netloc:
+                used_server = parsed.netloc
+                break
+            else:
+                continue
+
+        super().copyfile(from_file_url=from_file_url, to_file_url=to_file_url,
+            timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
             *args, **kwargs)
 
-    def dir(self, from_directory_url, timeout_seconds, *args, **kwargs):
+    def dir(self, from_directory_url, timeout_seconds=300, *args, **kwargs):
         """ Retrieve filenames contained in a directory.
 
         Do not recurse into subdirectories, only list files at the top level
@@ -103,7 +114,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # list all files on the device directory 'flash:'
@@ -125,7 +136,7 @@ class FileUtils(FileUtilsDeviceBase):
 
         return dir_output['files']
 
-    def stat(self, file_url, timeout_seconds, *args, **kwargs):
+    def stat(self, file_url, timeout_seconds=300, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
 
         Parameters
@@ -154,7 +165,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # list the file details on the device 'flash:' directory
@@ -180,7 +191,7 @@ class FileUtils(FileUtilsDeviceBase):
 
         return file_details
 
-    def deletefile(self, file_url, timeout_seconds, *args, **kwargs):
+    def deletefile(self, file_url, timeout_seconds=300, *args, **kwargs):
         """ Delete a file
 
         Parameters
@@ -206,7 +217,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # delete a specific file on device directory 'flash:'
@@ -218,7 +229,7 @@ class FileUtils(FileUtilsDeviceBase):
 
         super().deletefile(file_url, timeout_seconds, *args, **kwargs)
 
-    def renamefile(self, from_file_url, to_file_url, timeout_seconds, *args,
+    def renamefile(self, from_file_url, to_file_url, timeout_seconds=300, *args,
         **kwargs):
         """ Rename a file
 
@@ -248,7 +259,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # rename the file on the device 'bootflash:' directory
@@ -263,7 +274,7 @@ class FileUtils(FileUtilsDeviceBase):
         super().renamefile(from_file_url, to_file_url, timeout_seconds, cmd, 
             *args, **kwargs)
 
-    def chmod(self, file_url, mode, timeout_seconds, *args, **kwargs):
+    def chmod(self, file_url, mode, timeout_seconds=300, *args, **kwargs):
         """ Change file permissions
 
         Parameters
@@ -286,8 +297,8 @@ class FileUtils(FileUtilsDeviceBase):
         raise NotImplementedError("The fileutils module {} "
             "does not implement chmod.".format(self.__module__))
 
-    def validateserver(self, file_path, timeout_seconds, vrf='management', 
-        *args, **kwargs):
+    def validateserver(self, to_directory_url, timeout_seconds=300,
+        vrf='management', *args, **kwargs):
         ''' Make sure that the given server information is valid
 
 
@@ -298,7 +309,7 @@ class FileUtils(FileUtilsDeviceBase):
 
         Args:
             cmd (`str`):  Command to be executed on the device 
-            file_path (`str`):  File path including the protocol, server and 
+            to_directory_url (`str`):  File path including the protocol, server and 
                 file location.
             timeout_seconds (`str`):
                 The number of seconds to wait before aborting the operation.
@@ -316,18 +327,18 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # Validate server connectivity
             >>> fu_device.validateserver(
-            ...     file_path='ftp://10.1.7.250//auto/tftp-ssr/show_clock',
+            ...     to_directory_url='ftp://10.1.7.250//auto/tftp-ssr/show_clock',
             ...     timeout_seconds=300, device=device)
         '''
 
         # Patch up the command together
         # show clock > tftp://10.1.0.213//auto/ftp-ssr/show_clock vrf management
-        cli = "show clock > {e} vrf {vrf}".format(e=file_path, vrf=vrf)
+        cli = "show clock > {e} vrf {vrf}".format(e=to_directory_url, vrf=vrf)
 
-        super().validateserver(cli, timeout_seconds, file_path, *args,
+        super().validateserver(cli, timeout_seconds, to_directory_url, *args,
             **kwargs)

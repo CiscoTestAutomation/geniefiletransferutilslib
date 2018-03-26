@@ -201,16 +201,10 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
 
-        # Create file on the server
-        f = open(os.path.join('/auto/tftp-ssr/', 'memleak.tcl'), 'w')
-
         # Call copyfiles
         self.fu_device.copyfile(from_file_url='flash:/memleak.tcl',
             to_file_url='ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl',
             timeout_seconds='300', device=self.device)
-
-        # Delete the temp file created
-        os.remove('/auto/tftp-ssr/memleak.tcl')
 
     def test_dir(self):
 
@@ -261,7 +255,7 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute.side_effect = self.mapper
 
         self.fu_device.validateserver(
-            file_path='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
+            to_directory_url='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
             timeout_seconds=300, device=self.device)
 
 

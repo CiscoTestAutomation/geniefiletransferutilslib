@@ -2,17 +2,14 @@
 # Logging
 import logging
 
-# Parent inheritance
-from .. import FileUtils as FileUtilsCommonDeviceBase
-
 # Server FileUtils core implementation
 from ats.utils.fileutils import FileUtils as server
 
 # filemode_to_mode
 from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
 
-# Dir parser
-from parser.nxos.show_platform import Dir
+# Parent inheritance
+from .. import FileUtils as FileUtilsCommonDeviceBase
 
 # Initialize the logger
 logger = logging.getLogger(__name__)
@@ -20,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 class FileUtils(FileUtilsCommonDeviceBase):
 
-    def copyfile(self, from_file_url, to_file_url, timeout_seconds, cmd, *args,
-        **kwargs):
+    def copyfile(self, from_file_url, to_file_url, timeout_seconds, cmd,
+        used_server, *args, **kwargs):
         """ Copy a file to/from NXOS device
 
         Copy any file to/from a device to any location supported on the
@@ -35,6 +32,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 Full path to the copy 'to' location
             timeout_seconds: `str`
                 The number of seconds to wait before aborting the operation.
+            used_server: `str`
+              Server address/name
 
         Returns:
         --------
@@ -51,7 +50,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # copy file from device to server
@@ -75,7 +74,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         try:
             self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
-                **kwargs)
+                used_server=used_server, **kwargs)
         except Exception as e:
             raise type(e)('{}'.format(e))
 
@@ -111,7 +110,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # list all files on the device directory 'flash:'
@@ -174,7 +173,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # list the file details on the device 'flash:' directory
@@ -231,7 +230,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # delete a specific file on device directory 'flash:'
@@ -280,7 +279,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # rename the file on the device 'flash:' directory
@@ -325,7 +324,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
         raise NotImplementedError("The fileutils module {} "
             "does not implement chmod.".format(self.__module__))
 
-    def validateserver(self, cmd, timeout_seconds, file_path, *args, **kwargs):
+    def validateserver(self, cmd, timeout_seconds, to_directory_url, *args,
+        **kwargs):
         ''' Make sure that the given server information is valid
 
 
@@ -336,7 +336,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         Args:
             cmd (`str`):  Command to be executed on the device 
-            file_path (`str`):  File path including the protocol, server and 
+            to_directory_url (`str`):  File path including the protocol, server and 
                 file location.
             timeout_seconds: `str`
                 The number of seconds to wait before aborting the operation.
@@ -352,12 +352,12 @@ class FileUtils(FileUtilsCommonDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
+            # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # Validate server connectivity
             >>> fu_device.validateserver(
-            ...     file_path='ftp://10.1.7.250//auto/tftp-ssr/show_clock',
+            ...     to_directory_url='ftp://10.1.7.250//auto/tftp-ssr/show_clock',
             ...     timeout_seconds=300, device=device)
         '''
 
@@ -371,18 +371,18 @@ class FileUtils(FileUtilsCommonDeviceBase):
         except Exception as e:
             raise type(e)('TFTP/FTP server is unreachable') from e
 
-        # Instantiate a server
+        # Instanciate a server
         futlinux = server(testbed=self.testbed)
 
         # Check server created file
         try:
-            futlinux.check_file(file_path)
+            futlinux.check_file(to_directory_url)
         except Exception as e:
             raise type(e)("Server created file can't be checked") from e
 
         # Delete server created file
         try:
-            futlinux.deletefile(file_path)
+            futlinux.deletefile(to_directory_url)
         except Exception as e:
             raise type(e)("Server created file can't be deleted") from e
 

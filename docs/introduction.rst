@@ -50,7 +50,7 @@ device implementation corresponding to the device OS as illustrated below.
     # Import FileUtils core utilities
     from ats.utils.fileutils import FileUtils
 
-    # Instantiate a filetransferutils instance for the device corresponding
+    # Instanciate a filetransferutils instance for the device corresponding
     # to the device specific OS
     fu_device = FileUtils.from_device(device)
 
