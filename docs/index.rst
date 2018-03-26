@@ -1,7 +1,7 @@
 FileTransferUtils
 =================
 
-A package containing a collecton of file transfer libraries to/from remote servers.  
+A package containing a collecton of file transfer libraries to/from device/remote servers.  
 
 .. toctree::
 

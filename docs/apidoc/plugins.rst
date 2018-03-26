@@ -1,7 +1,4 @@
-Tftp package 
-============
-
-.. automodule:: filetransferutils.tftp.utils
+.. automodule:: filetransferutils.plugins.fileutils
     :members:
     :undoc-members:
     :show-inheritance:

@@ -4,6 +4,6 @@ API Documentation
 .. toctree::
    :maxdepth: 1
 
-   tftp
+   plugins
 
 .. sectionauthor:: Karim Mohamed <karmoham@cisco.com>
