@@ -31,9 +31,11 @@ class FileUtils(FileUtilsCommonDeviceBase):
             to_file_url: `str`
                 Full path to the copy 'to' location
             timeout_seconds: `str`
-                The number of seconds to wait before aborting the operation.
+                The number of seconds to wait before aborting the operation
+            cmd: `str`
+                Command to be executed on the device
             used_server: `str`
-              Server address/name
+                Server address/name
 
         Returns:
         --------

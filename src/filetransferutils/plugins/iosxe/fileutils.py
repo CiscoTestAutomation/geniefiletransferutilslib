@@ -12,8 +12,8 @@ from parser.iosxe.show_platform import Dir
 
 class FileUtils(FileUtilsDeviceBase):
 
-    def copyfile(self, from_file_url, to_file_url, timeout_seconds=300, *args,
-        **kwargs):
+    def copyfile(self, from_file_url, to_file_url, timeout_seconds=300,
+        vrf=None, *args, **kwargs):
         """ Copy a file to/from IOSXE device
 
         Copy any file to/from a device to any location supported on the
@@ -26,7 +26,9 @@ class FileUtils(FileUtilsDeviceBase):
             to_file_url: `str`
                 Full path to the copy 'to' location
             timeout_seconds: `str`
-                The number of seconds to wait before aborting the operation.
+                The number of seconds to wait before aborting the operation
+            vrf: `str`
+                Vrf to be used during copy operation
 
         Returns:
         --------
@@ -66,7 +68,11 @@ class FileUtils(FileUtilsDeviceBase):
         """
 
         # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
-        cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
+        if vrf:
+            cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=from_file_url,
+                t=to_file_url, vrf_value=vrf)
+        else:
+            cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
 
         # Extract the server address to be used later for authentication
         new_list = [from_file_url, to_file_url]

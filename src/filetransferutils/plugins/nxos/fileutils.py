@@ -26,7 +26,9 @@ class FileUtils(FileUtilsDeviceBase):
             to_file_url: `str`
                 Full path to the copy 'to' location
             timeout_seconds: `str`
-                The number of seconds to wait before aborting the operation.
+                The number of seconds to wait before aborting the operation
+            vrf: `str`
+                Vrf to be used during copy operation
 
         Returns:
         --------
