@@ -150,12 +150,12 @@ class FileUtils(FileUtilsBase):
 
         Examples:
         ---------
-      # FileUtils
-      >>> from ..fileutils import FileUtils
+        # FileUtils
+        >>> from ..fileutils import FileUtils
 
-      # Extract the file name and location
+        # Extract the file name and location
           >>> output = FileUtils.parse_url(file_url)
-            ParseResult(scheme='flash', netloc='', path='memleak.tcl',
+                  ParseResult(scheme='flash', netloc='', path='memleak.tcl',
                   params='', query='', fragment='')
 
           >>> output.scheme
@@ -167,3 +167,47 @@ class FileUtils(FileUtilsBase):
         """
         parsed_url = urlparse(url)
         return parsed_url
+
+    def get_server(self, from_file_url, to_file_url):
+        """ Get the server address from the provided URLs
+
+        Args:
+        -----
+            from_file_url: `str`
+              URL path of the from location
+            to_file_url: `str`
+              URL path of the to location
+
+
+        Returns:
+        --------
+            used_server: `str`
+              String of the used server
+
+        Raises
+        ------
+          None
+
+        Examples:
+        ---------
+        # FileUtils
+        >>> from ..fileutils import FileUtils
+
+        # Extract the file name and location
+          >>> output = FileUtils.get_server(from_file_url, to_file_url)
+
+          >>> output
+          ...   '10.1.7.250'
+
+        """
+        # Extract the server address to be used later for authentication
+        new_list = [from_file_url, to_file_url]
+        for item in new_list:
+            parsed = self.parse_url(item)
+            if parsed.netloc:
+                used_server = parsed.netloc
+                break
+            else:
+                continue
+
+        return used_server

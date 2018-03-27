@@ -72,14 +72,7 @@ class FileUtils(FileUtilsDeviceBase):
             vrf=vrf)
 
         # Extract the server address to be used later for authentication
-        new_list = [from_file_url, to_file_url]
-        for item in new_list:
-            parsed = self.parse_url(item)
-            if parsed.netloc:
-                used_server = parsed.netloc
-                break
-            else:
-                continue
+        used_server = self.get_server(from_file_url, to_file_url)
 
         super().copyfile(from_file_url=from_file_url, to_file_url=to_file_url,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
