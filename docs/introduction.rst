@@ -71,7 +71,7 @@ Now the API can be called for various operations such as:
 
         Example:
         -------
-        fu_device.copyfile(from_file_url='flash:/memleak.tcl',
+        fu_device.copyfile(from_file_url='flash://memleak.tcl',
             to_file_url='ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl',
             timeout_seconds=300, device=self.device)
 
@@ -99,7 +99,7 @@ Now the API can be called for various operations such as:
         Example:
         -------
         # Call the stat function
-        file_details = fu_device.stat(file_url='flash:memleak.tcl',
+        file_details = fu_device.stat(file_url='flash://memleak.tcl',
             timeout_seconds=300, device=self.device)
 
         # Retrieve the file details
@@ -121,7 +121,7 @@ Now the API can be called for various operations such as:
         Example:
         -------
         # Call the deletefile function
-        fu_device.deletefile(file_url='flash:memleak.tcl',
+        fu_device.deletefile(file_url='flash://memleak.tcl',
             timeout_seconds=300, device=self.device)
 
 * Rename file on device directory
@@ -136,7 +136,7 @@ Now the API can be called for various operations such as:
         Example:
         -------
         # Call the renamefile function
-        fu_device.renamefile(from_file_url='flash:memleak.tcl',
+        fu_device.renamefile(from_file_url='flash://memleak.tcl',
             to_file_url='new_file.tcl',
             timeout_seconds=300, device=self.device)
 
