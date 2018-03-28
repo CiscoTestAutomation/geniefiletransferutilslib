@@ -113,22 +113,23 @@ class FileUtils(FileUtilsDeviceBase):
             # Instanciate a filetransferutils instance for IOSXR device
             >>> fu_device = FileUtils.from_device(device)
 
-            # list all files on the device directory 'flash:'
-            >>> directory_output = fu_device.dir(from_directory_url='flash:',
+            # list all files on the device directory 'disk0:'
+            >>> directory_output = fu_device.dir(from_directory_url='disk0:',
             ...     timeout_seconds=300, device=device)
 
-            >>> directory_output['dir']['flash:/']['files']
+            >>> directory_output
 
-            EX:
-            ---
-                (Pdb) directory_output['dir']['flash:/']['files']['boothelper.log']
-                {'index': '69699', 'permissions': '-rw-', 'size': '76',
-                 'last_modified_date': 'Mar 20 2018 10:25:46 +00:00'}
+            ['disk0:/virt_strg_pool_bf_vdc_1/',
+             'disk0:/platform-sdk.cmd', 'disk0:/.swtam/',
+             'disk0:/virtual-instance/', 'disk0:/nxos.7.0.3.I7.1.bin',
+             'disk0:/virtual-instance.conf', 'disk0:/scripts/',
+             'disk0:/memleak.tcl', 'disk0:/acfg_base_running_cfg_vdc1',
+             'disk0:/.rpmstore/']
 
         """
 
-        dir_output = super().dir(from_directory_url, timeout_seconds, Dir,
-            *args, **kwargs)
+        dir_output = super().parsed_dir(from_directory_url, timeout_seconds,
+            Dir, *args, **kwargs)
 
         # Current dir iosxr parser doesn't parse files, when it is updated
         # we need to update the below returned result according to the
@@ -182,7 +183,8 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-        file_details = super().stat(file_url, timeout_seconds, *args, **kwargs)
+        file_details = super().stat(file_url, timeout_seconds, Dir, *args,
+            **kwargs)
 
         # Current dir iosxr parser doesn't parse files, when it is updated
         # we need to update the below returned result according to the

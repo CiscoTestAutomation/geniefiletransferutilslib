@@ -119,19 +119,24 @@ class FileUtils(FileUtilsDeviceBase):
             >>> directory_output = fu_device.dir(from_directory_url='flash:',
             ...     timeout_seconds=300, device=device)
 
-            >>> directory_output['dir']['flash:/']['files']
+            >>> directory_output
 
-            EX:
-            ---
-                (Pdb) directory_output['dir']['flash:/']['files']['boothelper.log']
-                {'index': '69699', 'permissions': '-rw-', 'size': '76',
-                 'last_modified_date': 'Mar 20 2018 10:25:46 +00:00'}
+            ['flash:/core', 'flash:/.installer',
+             'flash:/bootloader_evt_handle.log', 'flash:/stby-vlan.dat',
+             'flash:/memleak.tcl', 'flash:/nvram_config_bkup',
+             'flash:/tech_support', 'flash:/.rollback_timer',
+             'flash:/vlan.dat', 'flash:/onep', 'flash:/.dbpersist',
+             'flash:/ISSUCleanGolden', 'flash:/iox', 'flash:/tools',
+             'flash:/dc_profile_',
+             'flash:/RestoreTue_Mar_20_12_13_39_2018-Mar-20-11-14-38.106-0',
+             'flash:/RestoreTue_Mar_20_12_19_11_2018-Mar-20-11-20-09.900-0',
+             'flash:/nvram_config', 'flash:/boothelper.log', 'flash:/CRDU',
+             'flash:/.prst_sync', 'flash:/fake_config.tcl', 'flash:/gs_script']
 
         """
 
-
-        dir_output = super().dir(from_directory_url, timeout_seconds, Dir,
-            *args, **kwargs)
+        dir_output = super().parsed_dir(from_directory_url, timeout_seconds,
+            Dir, *args, **kwargs)
 
         # Extract the files location requested
         output = self.parse_url(from_directory_url)
@@ -139,7 +144,13 @@ class FileUtils(FileUtilsDeviceBase):
         # Construct the directory name
         directory = output.scheme + ":/"
 
-        return dir_output['dir'][directory]['files']
+        # Create a new list to return
+        new_list = []
+
+        for key in dir_output['dir'][directory]['files']:
+            new_list.append(directory+key)
+
+        return new_list
 
     def stat(self, file_url, timeout_seconds=300, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
@@ -188,11 +199,12 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-        files = super().stat(file_url, timeout_seconds, *args, **kwargs)
+        files = super().stat(file_url, timeout_seconds, Dir, *args, **kwargs)
 
         # Extract the file name requested
         output = self.parse_url(file_url)
-        file_details = files[output.path]
+        directory = output.scheme + ":/"
+        file_details = files['dir'][directory]['files'][output.path]
 
         return file_details
 

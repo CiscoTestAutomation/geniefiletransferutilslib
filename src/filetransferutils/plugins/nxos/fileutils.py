@@ -68,8 +68,9 @@ class FileUtils(FileUtilsDeviceBase):
         """
 
         # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management
-        cmd = 'copy {f} {t} vrf {vrf}'.format(f=from_file_url, t=to_file_url,
-            vrf=vrf)
+        if vrf:
+            cmd = 'copy {f} {t} vrf {vrf}'.format(f=from_file_url, t=to_file_url,
+                vrf=vrf)
 
         # Extract the server address to be used later for authentication
         used_server = self.get_server(from_file_url, to_file_url)
@@ -112,24 +113,37 @@ class FileUtils(FileUtilsDeviceBase):
             # Instanciate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
-            # list all files on the device directory 'flash:'
-            >>> directory_output = fu_device.dir(from_directory_url='flash:',
+            # list all files on the device directory 'bootflash:'
+            >>> directory_output = fu_device.dir(from_directory_url='bootflash:',
             ...     timeout_seconds=300, device=device)
 
-            >>> directory_output['dir']['flash:/']['files']
+            >>> directory_output
 
-            EX:
-            ---
-                (Pdb) directory_output['dir']['flash:/']['files']['boothelper.log']
-                {'index': '69699', 'permissions': '-rw-', 'size': '76',
-                 'last_modified_date': 'Mar 20 2018 10:25:46 +00:00'}
+            ['bootflash:/virt_strg_pool_bf_vdc_1/',
+             'bootflash:/platform-sdk.cmd', 'bootflash:/.swtam/',
+             'bootflash:/virtual-instance/', 'bootflash:/nxos.7.0.3.I7.1.bin',
+             'bootflash:/virtual-instance.conf', 'bootflash:/scripts/',
+             'bootflash:/memleak.tcl', 'bootflash:/acfg_base_running_cfg_vdc1',
+             'bootflash:/.rpmstore/']
 
         """
 
-        dir_output = super().dir(from_directory_url, timeout_seconds, Dir,
-            *args, **kwargs)
+        dir_output = super().parsed_dir(from_directory_url, timeout_seconds,
+            Dir, *args, **kwargs)
 
-        return dir_output['files']
+        # Extract the files location requested
+        output = self.parse_url(from_directory_url)
+
+        # Construct the directory name
+        directory = output.scheme + ":/"
+
+        # Create a new list to return
+        new_list = []
+
+        for key in dir_output['files']:
+            new_list.append(directory+key)
+
+        return new_list
 
     def stat(self, file_url, timeout_seconds=300, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
@@ -178,11 +192,11 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-        files = super().stat(file_url, timeout_seconds, *args, **kwargs)
+        files = super().stat(file_url, timeout_seconds, Dir, *args, **kwargs)
 
         # Extract the file name requested
         output = self.parse_url(file_url)
-        file_details = files[output.path]
+        file_details = files['files'][output.path]
 
         return file_details
 

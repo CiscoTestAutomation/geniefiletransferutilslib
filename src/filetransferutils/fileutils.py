@@ -11,7 +11,7 @@ from ats.utils.fileutils import FileUtils as FileUtilsBase
 
 class FileUtils(FileUtilsBase):
 
-    def send_cli_to_device(self, cli, used_server, invalid=None,
+    def send_cli_to_device(self, cli, used_server=None, invalid=None,
       timeout_seconds=300, **kwargs):
         """ Send command to a particular device and deal with its result
 
@@ -63,8 +63,8 @@ class FileUtils(FileUtilsBase):
         if used_server:
             username, password = self.get_auth(used_server)
         else:
-            raise AttributeError("Server is missing, can't proceed with"
-                             " execution")
+            username = None
+            password = None
 
         # Checking if user passed any extra invalid patterns
         if 'invalid' in kwargs:

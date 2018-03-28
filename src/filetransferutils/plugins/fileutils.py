@@ -80,7 +80,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
         except Exception as e:
             raise type(e)('{}'.format(e))
 
-    def dir(self, from_directory_url, timeout_seconds, dir_output, *args,
+    def parsed_dir(self, from_directory_url, timeout_seconds, dir_output, *args,
         **kwargs):
         """ Retrieve filenames contained in a directory.
 
@@ -94,6 +94,9 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
             timeout_seconds : `int`
                 The number of seconds to wait before aborting the operation.
+
+            dir_output : `obj`
+                The OS corresponding `dir` parser object
 
         Returns
         -------
@@ -146,7 +149,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         return parsed_output
 
-    def stat(self, file_url, timeout_seconds, *args, **kwargs):
+    def stat(self, file_url, timeout_seconds, dir_output, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
 
         Parameters
@@ -156,6 +159,9 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
             timeout_seconds : `int`
                 The number of seconds to wait before aborting the operation.
+
+            dir_output : `obj`
+                The OS corresponding `dir` parser object
 
         Returns
         -------
@@ -195,14 +201,12 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         # Extract device from the keyword arguments, if not passed raise an
         # AttributeError
-        if 'device' in kwargs:
-            device = kwargs['device']
-        else:
+        if 'device' not in kwargs:
             raise AttributeError("Devisce object is missing, can't proceed with"
                              " execution")
 
-        parsed_output = self.dir(from_directory_url=file_url,
-            timeout_seconds=timeout_seconds, device=device)
+        parsed_output = self.parsed_dir(from_directory_url=file_url,
+            timeout_seconds=timeout_seconds, dir_output=dir_output, **kwargs)
 
         return parsed_output
 

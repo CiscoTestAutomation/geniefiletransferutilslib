@@ -29,15 +29,11 @@ class test_filetransferutils(unittest.TestCase):
             username="myuser", password="mypw", address='1.1.1.1'),
     )
 
-    dir_output = {'platform-sdk.cmd': {'date': 'Jan 25 2017', 'time': '21:35:55', 'size': '0'},
-        '.swtam/': {'date': 'Jan 25 2017', 'time': '21:01:08', 'size': '4096'},
-        'scripts/': {'date': 'Jan 25 2017', 'time': '21:01:57', 'size': '4096'},
-        'virt_strg_pool_bf_vdc_1/': {'date': 'Jan 25 2017', 'time': '21:02:02', 'size': '4096'},
-        'ISSUCleanGolden.system.gbin': {'date': 'Jan 25 2017', 'time': '21:36:26', 'size': '752699904'},
-        '.rpmstore/': {'date': 'Jan 25 2017', 'time': '21:00:53', 'size': '4096'},
-        'virtual-instance.conf': {'date': 'Jan 25 2017', 'time': '21:01:11', 'size': '59'},
-        'ISSUCleanGolden.cfg': {'date': 'Jan 25 2017', 'time': '21:36:20', 'size': '390'},
-        'virtual-instance/': {'date': 'Jan 25 2017', 'time': '21:01:21', 'size': '4096'}}
+    dir_output = ['bootflash:/ISSUCleanGolden.system.gbin',
+        'bootflash:/ISSUCleanGolden.cfg', 'bootflash:/platform-sdk.cmd',
+        'bootflash:/virt_strg_pool_bf_vdc_1/', 'bootflash:/virtual-instance/',
+        'bootflash:/virtual-instance.conf', 'bootflash:/.rpmstore/',
+        'bootflash:/.swtam/', 'bootflash:/scripts/']
 
     # Mock device output
     raw1 = {'execute.return_value': '''
@@ -115,7 +111,7 @@ class test_filetransferutils(unittest.TestCase):
         directory_output = self.fu_device.dir(from_directory_url='bootflash:',
             timeout_seconds=300, device=self.device)
 
-        self.assertEqual(directory_output, self.dir_output)
+        self.assertEqual(sorted(directory_output), sorted(self.dir_output))
 
     def test_stat(self):
 
