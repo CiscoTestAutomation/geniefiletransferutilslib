@@ -119,22 +119,32 @@ class FileUtils(FileUtilsDeviceBase):
 
             >>> directory_output
 
-            ['disk0:/virt_strg_pool_bf_vdc_1/',
-             'disk0:/platform-sdk.cmd', 'disk0:/.swtam/',
-             'disk0:/virtual-instance/', 'disk0:/nxos.7.0.3.I7.1.bin',
-             'disk0:/virtual-instance.conf', 'disk0:/scripts/',
-             'disk0:/memleak.tcl', 'disk0:/acfg_base_running_cfg_vdc1',
-             'disk0:/.rpmstore/']
+            ['disk0:/lost+found', 'disk0:/ztp', 'disk0:/core',
+             'disk0:/envoke_log', 'disk0:/cvac', 'disk0:/cvac.log',
+             'disk0:/clihistory', 'disk0:/config -> /misc/config',
+             'disk0:/status_file', 'disk0:/kim', 'disk0:/pnet_cfg.log',
+             'disk0:/nvgen_traces', 'disk0:/oor_aware_process',
+             'disk0:/.python-history']
+
 
         """
 
         dir_output = super().parsed_dir(from_directory_url, timeout_seconds,
             Dir, *args, **kwargs)
 
-        # Current dir iosxr parser doesn't parse files, when it is updated
-        # we need to update the below returned result according to the
-        # parser schema
-        return dir_output
+        # Extract the files location requested
+        output = self.parse_url(from_directory_url)
+
+        # Construct the directory name
+        directory = output.scheme + ":/"
+
+        # Create a new list to return
+        new_list = []
+
+        for key in dir_output['dir']['files']:
+            new_list.append(directory+key)
+
+        return new_list
 
     def stat(self, file_url, timeout_seconds=300, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
@@ -178,17 +188,19 @@ class FileUtils(FileUtilsDeviceBase):
             EX:
             ---
                 (Pdb) directory_output
-                {'last_modified_date': 'Mar 20 2018 10:26:01 +00:00',
-                 'size': '104260', 'permissions': '-rw-', 'index': '69705'}
+                {'index': '14', 'date': 'Mar 28 12:23',
+                 'permission': '-rw-r--r--', 'size': '10429'}
 
         """
 
-        file_details = super().stat(file_url, timeout_seconds, Dir, *args,
+        files = super().stat(file_url, timeout_seconds, Dir, *args,
             **kwargs)
 
-        # Current dir iosxr parser doesn't parse files, when it is updated
-        # we need to update the below returned result according to the
-        # parser schema
+        # Extract the file name requested
+        output = self.parse_url(file_url)
+        directory = output.scheme + ":/"
+        file_details = files['dir']['files'][output.path]
+
         return file_details
 
     def deletefile(self, file_url, timeout_seconds=300, *args, **kwargs):
