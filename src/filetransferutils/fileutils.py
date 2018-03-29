@@ -1,4 +1,7 @@
 """ File utils base class for filetransferutils package. """
+# ipaddress
+import ipaddress
+
 # Urlparse
 from urllib.parse import urlparse
 
@@ -204,10 +207,13 @@ class FileUtils(FileUtilsBase):
         new_list = [from_file_url, to_file_url]
         for item in new_list:
             parsed = self.parse_url(item)
+            # Validate parsed address is a valid IP address
             if parsed.netloc:
-                used_server = parsed.netloc
-                break
-            else:
-                continue
+                try:
+                    ipaddress.ip_address(parsed.netloc)
+                    used_server = parsed.netloc
+                    break
+                except ValueError:
+                    continue
 
         return used_server
