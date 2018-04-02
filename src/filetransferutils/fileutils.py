@@ -225,7 +225,7 @@ class FileUtils(FileUtilsBase):
         if not used_server:
             # If both URLS have no valid IP addres, raise an exception
             raise Exception("No valid IP address has been detected in the "
-                "passed URLS '{from}' & '{to}'".format(
-                from=from_file_url, to=to_file_url))
+                "passed URLS '{from_URL}' & '{to_URL}'".format(
+                    from_URL=from_file_url, to_URL=to_file_url))
 
         return used_server
