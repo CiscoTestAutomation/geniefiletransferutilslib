@@ -7,7 +7,14 @@ from .. import FileUtils as FileUtilsDeviceBase
 from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
 
 # Dir parser
-from parser.iosxr.show_platform import Dir
+try:
+    from parser.iosxr.show_platform import Dir
+except ImportError:
+    try:
+        from genie_parser.iosxr.show_platform import Dir
+    except ImportError:
+        # For apidoc building only
+        from unittest.mock import Mock; Dir=Mock()
 
 
 class FileUtils(FileUtilsDeviceBase):
@@ -19,8 +26,8 @@ class FileUtils(FileUtilsDeviceBase):
         Copy any file to/from a device to any location supported on the
         device and on the running-configuration.
 
-        Args:
-        -----
+        Parameters
+        ----------
             from_file_url: `str`
                 Full path to the copy 'from' location
             to_file_url: `str`
@@ -30,18 +37,18 @@ class FileUtils(FileUtilsDeviceBase):
             vrf: `str`
                 Vrf to be used during copy operation
 
-        Returns:
-        --------
+        Returns
+        -------
             `None`
 
         Raises
         ------
-        Exception
-            When a device object is not present or device execution encountered
-            an unexpected behavior.
+            Exception
+                When a device object is not present or device execution
+                encountered an unexpected behavior.
 
-        Examples:
-        ---------
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
@@ -99,14 +106,14 @@ class FileUtils(FileUtilsDeviceBase):
 
         Raises
         ------
-        AttributeError
-            device object not passed in the function call
+            AttributeError
+                device object not passed in the function call
 
-        Exception
-            Parser encountered an issue
+            Exception
+                Parser encountered an issue
 
-        Examples:
-        ---------
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
@@ -164,14 +171,14 @@ class FileUtils(FileUtilsDeviceBase):
 
         Raises
         ------
-        AttributeError
-            device object not passed in the function call
+            AttributeError
+                device object not passed in the function call
 
-        Exception
-            Parser encountered an issue
+            Exception
+                Parser encountered an issue
 
-        Examples:
-        ---------
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
@@ -185,8 +192,8 @@ class FileUtils(FileUtilsDeviceBase):
             >>> directory_output['size']
             >>> directory_output['permissions']
 
-            EX:
-            ---
+            EX
+            --
                 (Pdb) directory_output
                 {'index': '14', 'date': 'Mar 28 12:23',
                  'permission': '-rw-r--r--', 'size': '10429'}
@@ -220,12 +227,12 @@ class FileUtils(FileUtilsDeviceBase):
 
         Raises
         ------
-        Exception
-            When a device object is not present or device execution encountered
-            an unexpected behavior.
+            Exception
+                When a device object is not present or device execution
+                encountered an unexpected behavior.
 
-        Examples:
-        ---------
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
@@ -262,12 +269,12 @@ class FileUtils(FileUtilsDeviceBase):
 
         Raises
         ------
-        Exception
-            When a device object is not present or device execution encountered
-            an unexpected behavior.
+            Exception
+                When a device object is not present or device execution
+                encountered an unexpected behavior.
 
-        Examples:
-        ---------
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
@@ -317,21 +324,25 @@ class FileUtils(FileUtilsDeviceBase):
         output to a particular file using transfer protocol. Then deletes the
         file.
 
-        Args:
+        Parameters
+        ----------
             cmd (`str`):  Command to be executed on the device 
-            to_directory_url (`str`):  File path including the protocol, server and 
-                file location.
+            to_directory_url (`str`):  File path including the protocol,
+                server and file location.
             timeout_seconds: `str`
                 The number of seconds to wait before aborting the operation.
 
-        Returns:
+        Returns
+        -------
             `None`
 
-        Raises:
+        Raises
+        ------
             Exception: If the command from the device to server is unreachable
                 or the protocol used doesn't support remote checks.
 
-        Examples:
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 

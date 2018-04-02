@@ -82,7 +82,7 @@ class BuildAndPreviewDocsCommand(Command):
 
     def run(self):
         user = os.environ['USER']
-        sphinx_build_cmd = "sphinx-build -b html -c ../docs " \
+        sphinx_build_cmd = "sphinx-build -b html -c ./docs " \
             "-d ./__build__/documentation/doctrees docs/ ./__build__/documentation/html"
         target_dir = "/users/{user}/WWW/cisco_shared/{pkg_name}".\
             format(user = user, pkg_name = pkg_name)
@@ -211,7 +211,7 @@ setup(
     cmdclass = {
         'clean': CleanCommand,
         'test': TestCommand,
-        'preview_docs': BuildAndPreviewDocsCommand,
+        'docs': BuildAndPreviewDocsCommand,
     },
 
     # non zip-safe (never tested it)

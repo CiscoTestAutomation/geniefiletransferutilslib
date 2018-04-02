@@ -9,7 +9,11 @@ from urllib.parse import urlparse
 from unicon.eal.dialogs import Statement, Dialog
 
 # FileUtils Core
-from ats.utils.fileutils import FileUtils as FileUtilsBase
+try:
+    from ats.utils.fileutils import FileUtils as FileUtilsBase
+except ImportError:
+    # For apidoc building only
+    from unittest.mock import Mock; FileUtilsBase=Mock
 
 
 class FileUtils(FileUtilsBase):
@@ -18,8 +22,8 @@ class FileUtils(FileUtilsBase):
       timeout_seconds=300, **kwargs):
         """ Send command to a particular device and deal with its result
 
-        Args:
-        -----
+        Parameters
+        ----------
             cli: `str`
               Full command to be executed on the device
             invalid: `str`
@@ -29,29 +33,29 @@ class FileUtils(FileUtilsBase):
             used_server: `str`
               Server address/name
 
-        Returns:
-        --------
+        Returns
+        -------
             `None`
 
         Raises
         ------
-        Exception
-            When a device object is not present or device execution encountered
-            an unexpected behavior.
+            Exception
+                When a device object is not present or device execution encountered
+                an unexpected behavior.
 
-        ValueError
-            When a device execution output shows one of the invalid patterns.
+            ValueError
+                When a device execution output shows one of the invalid patterns.
 
-        Examples:
-        ---------
-      # FileUtils
-      >>> from ..fileutils import FileUtils
+        Examples
+        --------
+            # FileUtils
+            >>> from ..fileutils import FileUtils
 
-          # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
-          >>> cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
+              # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
+              >>> cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
 
-          >>> FileUtils.send_cli_to_device(cli=cmd,
-          ...   timeout_seconds=timeout_seconds, **kwargs)
+              >>> FileUtils.send_cli_to_device(cli=cmd,
+              ...   timeout_seconds=timeout_seconds, **kwargs)
         """
 
         # Extract device from the keyword arguments, if not passed raise an
@@ -137,35 +141,35 @@ class FileUtils(FileUtilsBase):
     def parse_url(self, url):
         """ Parse the given url
 
-        Args:
-        -----
+        Parameters
+        ----------
             url: `str`
               Full url to be parsed
 
-        Returns:
-        --------
+        Returns
+        -------
             ParseResult class with the following keyword arguments
             (scheme='', netloc='', path='', params='', query='', fragment='')
 
         Raises
         ------
-          None
+            None
 
-        Examples:
-        ---------
-        # FileUtils
-        >>> from ..fileutils import FileUtils
+        Examples
+        --------
+            # FileUtils
+            >>> from ..fileutils import FileUtils
 
-        # Extract the file name and location
-          >>> output = FileUtils.parse_url(file_url)
-                  ParseResult(scheme='flash', netloc='', path='memleak.tcl',
-                  params='', query='', fragment='')
+            # Parse the URL
+              >>> output = FileUtils.parse_url(file_url)
+                      ParseResult(scheme='flash', netloc='', path='memleak.tcl',
+                      params='', query='', fragment='')
 
-          >>> output.scheme
-          ...   'flash'
+              >>> output.scheme
+              ...   'flash'
 
-          >>> output.path
-          ...   'memleak.tcl'
+              >>> output.path
+              ...   'memleak.tcl'
 
         """
         parsed_url = urlparse(url)
@@ -174,16 +178,16 @@ class FileUtils(FileUtilsBase):
     def get_server(self, from_file_url, to_file_url):
         """ Get the server address from the provided URLs
 
-        Args:
-        -----
+        Parameters
+        ----------
             from_file_url: `str`
               URL path of the from location
             to_file_url: `str`
               URL path of the to location
 
 
-        Returns:
-        --------
+        Returns
+        -------
             used_server: `str`
               String of the used server
 
@@ -191,18 +195,20 @@ class FileUtils(FileUtilsBase):
         ------
           None
 
-        Examples:
-        ---------
+        Examples
+        --------
         # FileUtils
         >>> from ..fileutils import FileUtils
 
-        # Extract the file name and location
+        # Get the server
           >>> output = FileUtils.get_server(from_file_url, to_file_url)
 
           >>> output
           ...   '10.1.7.250'
 
         """
+        used_server = None
+
         # Extract the server address to be used later for authentication
         new_list = [from_file_url, to_file_url]
         for item in new_list:
@@ -215,5 +221,11 @@ class FileUtils(FileUtilsBase):
                     break
                 except ValueError:
                     continue
+
+        if not used_server:
+            # If both URLS have no valid IP addres, raise an exception
+            raise Exception("No valid IP address has been detected in the "
+                "passed URLS '{from}' & '{to}'".format(
+                from=from_file_url, to=to_file_url))
 
         return used_server

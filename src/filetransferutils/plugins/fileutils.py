@@ -2,11 +2,26 @@
 # Logging
 import logging
 
-# Server FileUtils core implementation
-from ats.utils.fileutils import FileUtils as server
+try:
+    from ats.utils.fileutils import FileUtils as server
+    # Server FileUtils core implementation
 
-# filemode_to_mode
-from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
+    # filemode_to_mode
+    from ats.utils.fileutils.plugins.linux.ftp.fileutils import \
+        filemode_to_mode
+except ImportError:
+    try:
+        from ats.utils.fileutils import FileUtils as server
+        # Server FileUtils core implementation
+
+        # filemode_to_mode
+        from ats.utils.fileutils.plugins.linux.ftp.fileutils import \
+            filemode_to_mode
+    except ImportError:
+        # For apidoc building only
+        from unittest.mock import Mock
+        server = Mock
+        filemode_to_mode = Mock()
 
 # Parent inheritance
 from .. import FileUtils as FileUtilsCommonDeviceBase
@@ -24,8 +39,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
         Copy any file to/from a device to any location supported on the
         device and on the running-configuration.
 
-        Args:
-        -----
+        Parameters
+        ----------
             from_file_url: `str`
                 Full path to the copy 'from' location
             to_file_url: `str`
@@ -37,18 +52,18 @@ class FileUtils(FileUtilsCommonDeviceBase):
             used_server: `str`
                 Server address/name
 
-        Returns:
-        --------
+        Returns
+        -------
             `None`
 
         Raises
         ------
-        Exception
-            When a device object is not present or device execution encountered
-            an unexpected behavior.
+            Exception
+                When a device object is not present or device execution encountered
+                an unexpected behavior.
 
-        Examples:
-        ---------
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
@@ -104,14 +119,14 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         Raises
         ------
-        AttributeError
-            device object not passed in the function call
+            AttributeError
+                device object not passed in the function call
 
-        Exception
-            Parser encountered an issue
+            Exception
+                Parser encountered an issue
 
-        Examples:
-        ---------
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
@@ -124,8 +139,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
             >>> directory_output['dir']['flash:/']['files']
 
-            EX:
-            ---
+            EX
+            --
                 (Pdb) directory_output['dir']['flash:/']['files']['boothelper.log']
                 {'index': '69699', 'permissions': '-rw-', 'size': '76',
                  'last_modified_date': 'Mar 20 2018 10:25:46 +00:00'}
@@ -170,14 +185,14 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         Raises
         ------
-        AttributeError
-            device object not passed in the function call
+            AttributeError
+                device object not passed in the function call
 
-        Exception
-            Parser encountered an issue
+            Exception
+                Parser encountered an issue
 
-        Examples:
-        ---------
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
@@ -191,8 +206,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
             >>> directory_output['size']
             >>> directory_output['permissions']
 
-            EX:
-            ---
+            EX
+            --
                 (Pdb) directory_output
                 {'last_modified_date': 'Mar 20 2018 10:26:01 +00:00',
                  'size': '104260', 'permissions': '-rw-', 'index': '69705'}
@@ -231,8 +246,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
             When a device object is not present or device execution encountered
             an unexpected behavior.
 
-        Examples:
-        ---------
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
@@ -280,8 +295,8 @@ class FileUtils(FileUtilsCommonDeviceBase):
             When a device object is not present or device execution encountered
             an unexpected behavior.
 
-        Examples:
-        ---------
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
@@ -340,21 +355,25 @@ class FileUtils(FileUtilsCommonDeviceBase):
         output to a particular file using transfer protocol. Then deletes the
         file.
 
-        Args:
+        Parameters
+        ----------
             cmd (`str`):  Command to be executed on the device 
             to_directory_url (`str`):  File path including the protocol, server and 
                 file location.
             timeout_seconds: `str`
                 The number of seconds to wait before aborting the operation.
 
-        Returns:
+        Returns
+        -------
             `None`
 
-        Raises:
+        Raises
+        ------
             Exception: If the command from the device to server is unreachable
                 or the protocol used doesn't support remote checks.
 
-        Examples:
+        Examples
+        --------
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 

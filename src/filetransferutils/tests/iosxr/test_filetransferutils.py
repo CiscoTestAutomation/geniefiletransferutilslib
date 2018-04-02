@@ -29,14 +29,17 @@ class test_filetransferutils(unittest.TestCase):
             username="myuser", password="mypw", address='1.1.1.1'),
     )
 
-    dir_output = {'dir':
-        {'total_free_bytes': '938376 kbytes', 'dir_name': '/misc/scratch',
-         'total_bytes': '1012660 kbytes'}}
+    dir_output = ['disk0:/status_file', 'disk0:/clihistory', 'disk0:/cvac',
+        'disk0:/core', 'disk0:/envoke_log', 'disk0:/lost+found',
+        'disk0:/pnet_cfg.log', 'disk0:/oor_aware_process',
+        'disk0:/.python-history', 'disk0:/cvac.log', 'disk0:/nvgen_traces',
+        'disk0:/fake_config_2.tcl', 'disk0:/ztp',
+        'disk0:/config -> /misc/config', 'disk0:/memleak.tcl']
 
 
     # Mock device output
     raw1 = {'execute.return_value': '''
-        copy flash:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl
+        copy disk0:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl
         Address or name of remote host [1.1.1.1]? 
         Destination filename [/auto/tftp-ssr/memleak.tcl]? 
         !!
@@ -52,7 +55,7 @@ class test_filetransferutils(unittest.TestCase):
            41 -rw-r--r-- 1  1985 Mar 12 14:35 status_file
            13 -rw-r--r-- 1  1438 Mar  7 14:26 envoke_log
            16 -rw-r--r-- 1    98 Mar  7 06:34 oor_aware_process
-         8178 drwxr-xr-x 2  4096 Mar  7 14:27 kim
+         8178 drwxr-xr-x 2  4096 Mar  7 14:27 memleak.tcl
          8177 drwx---r-x 2  4096 Mar  7 14:27 clihistory
            15 lrwxrwxrwx 1    12 Mar  7 14:26 config -> /misc/config
            12 drwxr-xr-x 2  4096 Mar  7 14:26 core
@@ -108,9 +111,7 @@ class test_filetransferutils(unittest.TestCase):
         directory_output = self.fu_device.dir(from_directory_url='disk0:',
             timeout_seconds=300, device=self.device)
 
-        # Dir IOSXR parser need to bbe updated and then self.dir_output will
-        # be updated as well
-        self.assertEqual(directory_output, self.dir_output)
+        self.assertEqual(sorted(directory_output), sorted(self.dir_output))
 
     def test_stat(self):
 
@@ -120,9 +121,11 @@ class test_filetransferutils(unittest.TestCase):
         file_details = self.fu_device.stat(file_url='disk0:memleak.tcl',
           timeout_seconds=300, device=self.device)
 
-        # Dir IOSXR parser need to bbe updated and then below assert check will
-        # be updated as well
-        self.assertEqual(file_details, self.dir_output)
+        self.assertEqual(file_details['index'],
+          '8178')
+        self.assertEqual(file_details['date'], 'Mar 7 14:27')
+        self.assertEqual(file_details['permission'], 'drwxr-xr-x')
+        self.assertEqual(file_details['size'], '4096')
 
     def test_deletefile(self):
 
