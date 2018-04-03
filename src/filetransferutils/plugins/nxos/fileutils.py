@@ -56,6 +56,7 @@ class FileUtils(FileUtilsDeviceBase):
             >>> from ats.utils.fileutils import FileUtils
 
             # Instantiate a filetransferutils instance for NXOS device
+            >>> from ats.utils.fileutils import FileUtils
             >>> fu_device = FileUtils.from_device(device)
 
             # copy file from device to server
