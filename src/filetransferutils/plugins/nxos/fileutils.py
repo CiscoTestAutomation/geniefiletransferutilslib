@@ -20,7 +20,7 @@ except ImportError:
 class FileUtils(FileUtilsDeviceBase):
 
     def copyfile(self, from_file_url, to_file_url, timeout_seconds=300,
-        vrf='management', *args, **kwargs):
+                 vrf=None, local=False, *args, **kwargs):
         """ Copy a file to/from NXOS device
 
         Copy any file to/from a device to any location supported on the
@@ -36,6 +36,9 @@ class FileUtils(FileUtilsDeviceBase):
                 The number of seconds to wait before aborting the operation
             vrf: `str`
                 Vrf to be used during copy operation
+            local: bool
+                Flag to determine if copy destination is local to the device
+                Example (bootflash/running-config/startup-config etc.)
 
         Returns
         -------
@@ -52,7 +55,7 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instanciate a filetransferutils instance for NXOS device
+            # Instantiate a filetransferutils instance for NXOS device
             >>> fu_device = FileUtils.from_device(device)
 
             # copy file from device to server
@@ -72,10 +75,33 @@ class FileUtils(FileUtilsDeviceBase):
             ...     from_file_url='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
             ...     to_file_url='running-config',
             ...     timeout_seconds='300', device=device)
+
+            # copy running-configuration to device memory
+            >>> fu_device.copyfile(
+            ...     from_file_url='running-configuration',
+            ...     to_file_url='bootflash:filename',
+            ...     timeout_seconds='300', device=device)
+
+            # copy startup-configuration running-configuration
+            >>> fu_device.copyfile(
+            ...     from_file_url='startup-configuration',
+            ...     to_file_url='running-configuration',
+            ...     timeout_seconds='300', device=device)w
         """
 
-        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management
-        if vrf:
+        if local:
+            # Server is not involved
+            used_server = None
+
+            # Build copy command
+            # Example - copy running-configuration bootflash:tempfile1
+            cmd = 'copy {f} {t}'.fromat(f=from_file_url, t=to_file_url)
+
+        else:
+            # Extract the server address to be used later for authentication
+            used_server = self.get_server(from_file_url, to_file_url)
+
+            # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management
             cmd = 'copy {f} {t} vrf {vrf}'.format(f=from_file_url, t=to_file_url,
                 vrf=vrf)
 
