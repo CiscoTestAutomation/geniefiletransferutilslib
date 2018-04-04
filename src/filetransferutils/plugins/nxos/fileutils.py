@@ -36,6 +36,9 @@ class FileUtils(FileUtilsDeviceBase):
                 The number of seconds to wait before aborting the operation
             vrf: `str`
                 Vrf to be used during copy operation
+            local: bool
+                Flag to determine if copy destination is local to the device
+                Example (bootflash/running-config/startup-config etc.)
 
         Returns
         -------
@@ -52,7 +55,8 @@ class FileUtils(FileUtilsDeviceBase):
             # FileUtils
             >>> from ats.utils.fileutils import FileUtils
 
-            # Instanciate a filetransferutils instance for NXOS device
+            # Instantiate a filetransferutils instance for NXOS device
+            >>> from ats.utils.fileutils import FileUtils
             >>> fu_device = FileUtils.from_device(device)
 
             # copy file from device to server
@@ -72,6 +76,18 @@ class FileUtils(FileUtilsDeviceBase):
             ...     source='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
             ...     destination='running-config',
             ...     timeout_seconds='300', device=device)
+
+            # copy running-configuration to device memory
+            >>> fu_device.copyfile(
+            ...     from_file_url='running-configuration',
+            ...     to_file_url='bootflash:filename',
+            ...     timeout_seconds='300', device=device)
+
+            # copy startup-configuration running-configuration
+            >>> fu_device.copyfile(
+            ...     from_file_url='startup-configuration',
+            ...     to_file_url='running-configuration',
+            ...     timeout_seconds='300', device=device)w
         """
 
         # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management
