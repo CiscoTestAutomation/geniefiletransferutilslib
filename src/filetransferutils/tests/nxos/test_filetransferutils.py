@@ -101,7 +101,7 @@ class test_filetransferutils(unittest.TestCase):
         # Call copyfiles
         self.fu_device.copyfile(from_file_url='bootflash:/virtual-instance.conf',
             to_file_url='ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf',
-            timeout_seconds='300', device=self.device)
+            timeout_seconds='300', device=self.device, vrf='management')
 
     def test_dir(self):
 
