@@ -20,7 +20,7 @@ except ImportError:
 class FileUtils(FileUtilsDeviceBase):
 
     def copyfile(self, from_file_url, to_file_url, timeout_seconds=300,
-        vrf=None, *args, **kwargs):
+                 vrf=None, local=False, *args, **kwargs):
         """ Copy a file to/from IOSXE device
 
         Copy any file to/from a device to any location supported on the

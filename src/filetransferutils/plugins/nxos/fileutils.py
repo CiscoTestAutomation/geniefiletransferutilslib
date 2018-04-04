@@ -96,7 +96,7 @@ class FileUtils(FileUtilsDeviceBase):
 
             # Build copy command
             # Example - copy running-configuration bootflash:tempfile1
-            cmd = 'copy {f} {t}'.fromat(f=from_file_url, t=to_file_url)
+            cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
 
         else:
             # Extract the server address to be used later for authentication
@@ -105,9 +105,6 @@ class FileUtils(FileUtilsDeviceBase):
             # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management
             cmd = 'copy {f} {t} vrf {vrf}'.format(f=from_file_url, t=to_file_url,
                 vrf=vrf)
-
-        # Extract the server address to be used later for authentication
-        used_server = self.get_server(from_file_url, to_file_url)
 
         super().copyfile(from_file_url=from_file_url, to_file_url=to_file_url,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
