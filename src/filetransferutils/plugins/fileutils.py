@@ -32,61 +32,61 @@ logger = logging.getLogger(__name__)
 
 class FileUtils(FileUtilsCommonDeviceBase):
 
-    def copyfile(self, from_file_url, to_file_url, timeout_seconds, cmd,
+    def copyfile(self, source, destination, timeout_seconds, cmd,
         used_server, *args, **kwargs):
         """ Copy a file to/from NXOS device
 
-        Copy any file to/from a device to any location supported on the
-        device and on the running-configuration.
+            Copy any file to/from a device to any location supported on the
+            device and on the running-configuration.
 
-        Parameters
-        ----------
-            from_file_url: `str`
-                Full path to the copy 'from' location
-            to_file_url: `str`
-                Full path to the copy 'to' location
-            timeout_seconds: `str`
-                The number of seconds to wait before aborting the operation
-            cmd: `str`
-                Command to be executed on the device
-            used_server: `str`
-                Server address/name
+            Parameters
+            ----------
+                source: `str`
+                    Full path to the copy 'from' location
+                destination: `str`
+                    Full path to the copy 'to' location
+                timeout_seconds: `str`
+                    The number of seconds to wait before aborting the operation
+                cmd: `str`
+                    Command to be executed on the device
+                used_server: `str`
+                    Server address/name
 
-        Returns
-        -------
-            `None`
+            Returns
+            -------
+                `None`
 
-        Raises
-        ------
-            Exception
-                When a device object is not present or device execution encountered
-                an unexpected behavior.
+            Raises
+            ------
+                Exception
+                    When a device object is not present or device execution encountered
+                    an unexpected behavior.
 
-        Examples
-        --------
-            # FileUtils
-            >>> from ats.utils.fileutils import FileUtils
+            Examples
+            --------
+                # FileUtils
+                >>> from ats.utils.fileutils import FileUtils
 
-            # Instanciate a filetransferutils instance for NXOS device
-            >>> fu_device = FileUtils.from_device(device)
+                # Instanciate a filetransferutils instance for NXOS device
+                >>> fu_device = FileUtils.from_device(device)
 
-            # copy file from device to server
-            >>> fu_device.copyfile(
-            ...     from_file_url='flash:/memleak.tcl',
-            ...     to_file_url='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
-            ...     timeout_seconds='300', device=device)
+                # copy file from device to server
+                >>> fu_device.copyfile(
+                ...     source='flash:/memleak.tcl',
+                ...     destination='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
+                ...     timeout_seconds='300', device=device)
 
-            # copy file from server to device
-            >>> fu_device.copyfile(
-            ...     from_file_url='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
-            ...     to_file_url='flash:/new_file.tcl',
-            ...     timeout_seconds='300', device=device)
+                # copy file from server to device
+                >>> fu_device.copyfile(
+                ...     source='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
+                ...     destination='flash:/new_file.tcl',
+                ...     timeout_seconds='300', device=device)
 
-            # copy file from server to device running configuration
-            >>> fu_device.copyfile(
-            ...     from_file_url='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
-            ...     to_file_url='running-config',
-            ...     timeout_seconds='300', device=device)
+                # copy file from server to device running configuration
+                >>> fu_device.copyfile(
+                ...     source='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
+                ...     destination='running-config',
+                ...     timeout_seconds='300', device=device)
         """
 
         try:
@@ -95,52 +95,52 @@ class FileUtils(FileUtilsCommonDeviceBase):
         except Exception as e:
             raise type(e)('{}'.format(e))
 
-    def parsed_dir(self, from_directory_url, timeout_seconds, dir_output, *args,
+    def parsed_dir(self, target, timeout_seconds, dir_output, *args,
         **kwargs):
         """ Retrieve filenames contained in a directory.
 
-        Do not recurse into subdirectories, only list files at the top level
-        of the given directory.
+            Do not recurse into subdirectories, only list files at the top level
+            of the given directory.
 
-        Parameters
-        ----------
-            file_url : `str`
-                The URL of the file whose details are to be retrieved.
+            Parameters
+            ----------
+                target : `str`
+                    The directory whose details are to be retrieved.
 
-            timeout_seconds : `int`
-                The number of seconds to wait before aborting the operation.
+                timeout_seconds : `int`
+                    The number of seconds to wait before aborting the operation.
 
-            dir_output : `obj`
-                The OS corresponding `dir` parser object
+                dir_output : `obj`
+                    The OS corresponding `dir` parser object
 
-        Returns
-        -------
-            `dict` : Dict of filename URLs and the corresponding info (ex:size)
+            Returns
+            -------
+                `dict` : Dict of filename URLs and the corresponding info (ex:size)
 
-        Raises
-        ------
-            AttributeError
-                device object not passed in the function call
+            Raises
+            ------
+                AttributeError
+                    device object not passed in the function call
 
-            Exception
-                Parser encountered an issue
+                Exception
+                    Parser encountered an issue
 
-        Examples
-        --------
-            # FileUtils
-            >>> from ats.utils.fileutils import FileUtils
+            Examples
+            --------
+                # FileUtils
+                >>> from ats.utils.fileutils import FileUtils
 
-            # Instanciate a filetransferutils instance for NXOS device
-            >>> fu_device = FileUtils.from_device(device)
+                # Instanciate a filetransferutils instance for NXOS device
+                >>> fu_device = FileUtils.from_device(device)
 
-            # list all files on the device directory 'flash:'
-            >>> directory_output = fu_device.dir(from_directory_url='flash:',
-            ...     timeout_seconds=300, device=device)
+                # list all files on the device directory 'flash:'
+                >>> directory_output = fu_device.dir(target='flash:',
+                ...     timeout_seconds=300, device=device)
 
-            >>> directory_output['dir']['flash:/']['files']
+                >>> directory_output['dir']['flash:/']['files']
 
-            EX
-            --
+                EX
+                --
                 (Pdb) directory_output['dir']['flash:/']['files']['boothelper.log']
                 {'index': '69699', 'permissions': '-rw-', 'size': '76',
                  'last_modified_date': 'Mar 20 2018 10:25:46 +00:00'}
@@ -164,50 +164,50 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         return parsed_output
 
-    def stat(self, file_url, timeout_seconds, dir_output, *args, **kwargs):
+    def stat(self, target, timeout_seconds, dir_output, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
 
-        Parameters
-        ----------
-            file_url : `str`
-                The URL of the file whose details are to be retrieved.
+            Parameters
+            ----------
+                target : `str`
+                    The URL of the file whose details are to be retrieved.
 
-            timeout_seconds : `int`
-                The number of seconds to wait before aborting the operation.
+                timeout_seconds : `int`
+                    The number of seconds to wait before aborting the operation.
 
-            dir_output : `obj`
-                The OS corresponding `dir` parser object
+                dir_output : `obj`
+                    The OS corresponding `dir` parser object
 
-        Returns
-        -------
-            `file_details` : File details including size, permissions, index
-                and last modified date.
+            Returns
+            -------
+                `file_details` : File details including size, permissions, index
+                    and last modified date.
 
-        Raises
-        ------
-            AttributeError
-                device object not passed in the function call
+            Raises
+            ------
+                AttributeError
+                    device object not passed in the function call
 
-            Exception
-                Parser encountered an issue
+                Exception
+                    Parser encountered an issue
 
-        Examples
-        --------
-            # FileUtils
-            >>> from ats.utils.fileutils import FileUtils
+            Examples
+            --------
+                # FileUtils
+                >>> from ats.utils.fileutils import FileUtils
 
-            # Instanciate a filetransferutils instance for NXOS device
-            >>> fu_device = FileUtils.from_device(device)
+                # Instanciate a filetransferutils instance for NXOS device
+                >>> fu_device = FileUtils.from_device(device)
 
-            # list the file details on the device 'flash:' directory
-            >>> directory_output = fu_device.stat(file_url='flash:memleak.tcl',
-            ...     timeout_seconds=300, device=device)
+                # list the file details on the device 'flash:' directory
+                >>> directory_output = fu_device.stat(target='flash:memleak.tcl',
+                ...     timeout_seconds=300, device=device)
 
-            >>> directory_output['size']
-            >>> directory_output['permissions']
+                >>> directory_output['size']
+                >>> directory_output['permissions']
 
-            EX
-            --
+                EX
+                --
                 (Pdb) directory_output
                 {'last_modified_date': 'Mar 20 2018 10:26:01 +00:00',
                  'size': '104260', 'permissions': '-rw-', 'index': '69705'}
@@ -220,49 +220,49 @@ class FileUtils(FileUtilsCommonDeviceBase):
             raise AttributeError("Devisce object is missing, can't proceed with"
                              " execution")
 
-        parsed_output = self.parsed_dir(from_directory_url=file_url,
+        parsed_output = self.parsed_dir(target=target,
             timeout_seconds=timeout_seconds, dir_output=dir_output, **kwargs)
 
         return parsed_output
 
-    def deletefile(self, file_url, timeout_seconds, *args, **kwargs):
+    def deletefile(self, target, timeout_seconds, *args, **kwargs):
         """ Delete a file
 
-        Parameters
-        ----------
-            file_url : `str`
-                The URL of the file whose details are to be retrieved.
+            Parameters
+            ----------
+                target : `str`
+                    The URL of the file whose details are to be retrieved.
 
-            timeout_seconds : `int`
-                The number of seconds to wait before aborting the operation.
+                timeout_seconds : `int`
+                    The number of seconds to wait before aborting the operation.
 
-        Returns
-        -------
-            None
+            Returns
+            -------
+                None
 
-        Raises
-        ------
-        Exception
-            When a device object is not present or device execution encountered
-            an unexpected behavior.
+            Raises
+            ------
+            Exception
+                When a device object is not present or device execution encountered
+                an unexpected behavior.
 
-        Examples
-        --------
-            # FileUtils
-            >>> from ats.utils.fileutils import FileUtils
+            Examples
+            --------
+                # FileUtils
+                >>> from ats.utils.fileutils import FileUtils
 
-            # Instanciate a filetransferutils instance for NXOS device
-            >>> fu_device = FileUtils.from_device(device)
+                # Instanciate a filetransferutils instance for NXOS device
+                >>> fu_device = FileUtils.from_device(device)
 
-            # delete a specific file on device directory 'flash:'
-            >>> directory_output = fu_device.deletefile(
-            ...     file_url='flash:memleak_bckp.tcl',
-            ...     timeout_seconds=300, device=device)
+                # delete a specific file on device directory 'flash:'
+                >>> directory_output = fu_device.deletefile(
+                ...     target='flash:memleak_bckp.tcl',
+                ...     timeout_seconds=300, device=device)
 
         """
 
         # delete flash:memleak.tcl
-        cmd = 'delete {f}'.format(f=file_url)
+        cmd = 'delete {f}'.format(f=target)
 
         try:
             self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
@@ -270,43 +270,43 @@ class FileUtils(FileUtilsCommonDeviceBase):
         except Exception as e:
             raise type(e)('{}'.format(e))
 
-    def renamefile(self, from_file_url, to_file_url, timeout_seconds, cmd,
+    def renamefile(self, source, destination, timeout_seconds, cmd,
         *args, **kwargs):
         """ Rename a file
 
-        Parameters
-        ----------
-            from_file_url : `str`
-                The URL of the file to be renamed.
+            Parameters
+            ----------
+                source : `str`
+                    The URL of the file to be renamed.
 
-            to_file_url : `str`
-                The URL of the new file name.
+                destination : `str`
+                    The URL of the new file name.
 
-            timeout_seconds : `int`
-                Maximum allowed amount of time for the operation.
+                timeout_seconds : `int`
+                    Maximum allowed amount of time for the operation.
 
-        Returns
-        -------
-            None
+            Returns
+            -------
+                None
 
-        Raises
-        ------
-        Exception
-            When a device object is not present or device execution encountered
-            an unexpected behavior.
+            Raises
+            ------
+            Exception
+                When a device object is not present or device execution encountered
+                an unexpected behavior.
 
-        Examples
-        --------
-            # FileUtils
-            >>> from ats.utils.fileutils import FileUtils
+            Examples
+            --------
+                # FileUtils
+                >>> from ats.utils.fileutils import FileUtils
 
-            # Instanciate a filetransferutils instance for NXOS device
-            >>> fu_device = FileUtils.from_device(device)
+                # Instanciate a filetransferutils instance for NXOS device
+                >>> fu_device = FileUtils.from_device(device)
 
-            # rename the file on the device 'flash:' directory
-            >>> fu_device.renamefile(file_url='flash:memleak.tcl',
-            ...     to_file_url='memleak_backup.tcl'
-            ...     timeout_seconds=300, device=device)
+                # rename the file on the device 'flash:' directory
+                >>> fu_device.renamefile(target='flash:memleak.tcl',
+                ...     destination='memleak_backup.tcl'
+                ...     timeout_seconds=300, device=device)
 
         """
 
@@ -317,12 +317,12 @@ class FileUtils(FileUtilsCommonDeviceBase):
             raise type(e)('{}'.format(e))
 
 
-    def chmod(self, file_url, mode, timeout_seconds, *args, **kwargs):
+    def chmod(self, target, mode, timeout_seconds, *args, **kwargs):
         """ Change file permissions
 
         Parameters
         ----------
-            file_url : `str`
+            target : `str`
                 The URL of the file whose permissions are to be changed.
 
             mode : `int`
@@ -345,46 +345,46 @@ class FileUtils(FileUtilsCommonDeviceBase):
         raise NotImplementedError("The fileutils module {} "
             "does not implement chmod.".format(self.__module__))
 
-    def validateserver(self, cmd, timeout_seconds, to_directory_url, *args,
-        **kwargs):
-        ''' Make sure that the given server information is valid
+    def validateserver(self, cmd, target, timeout_seconds=300, *args, **kwargs):
+        """ Make sure that the given server information is valid
 
 
-        Function that verifies if the server information given is valid, and if
-        the device can connect to it. It does this by saving `show clock`
-        output to a particular file using transfer protocol. Then deletes the
-        file.
+            Function that verifies if the server information given is valid, and if
+            the device can connect to it. It does this by saving `show clock`
+            output to a particular file using transfer protocol. Then deletes the
+            file.
 
-        Parameters
-        ----------
-            cmd (`str`):  Command to be executed on the device 
-            to_directory_url (`str`):  File path including the protocol, server and 
-                file location.
-            timeout_seconds: `str`
-                The number of seconds to wait before aborting the operation.
+            Parameters
+            ----------
+                cmd (`str`):  Command to be executed on the device 
+                target (`str`):  File path including the protocol, server and 
+                    file location.
+                timeout_seconds: `str`
+                    The number of seconds to wait before aborting the operation.
+                    Default is 300
 
-        Returns
-        -------
-            `None`
+            Returns
+            -------
+                `None`
 
-        Raises
-        ------
-            Exception: If the command from the device to server is unreachable
-                or the protocol used doesn't support remote checks.
+            Raises
+            ------
+                Exception: If the command from the device to server is unreachable
+                    or the protocol used doesn't support remote checks.
 
-        Examples
-        --------
-            # FileUtils
-            >>> from ats.utils.fileutils import FileUtils
+            Examples
+            --------
+                # FileUtils
+                >>> from ats.utils.fileutils import FileUtils
 
-            # Instanciate a filetransferutils instance for NXOS device
-            >>> fu_device = FileUtils.from_device(device)
+                # Instanciate a filetransferutils instance for NXOS device
+                >>> fu_device = FileUtils.from_device(device)
 
-            # Validate server connectivity
-            >>> fu_device.validateserver(
-            ...     to_directory_url='ftp://10.1.7.250//auto/tftp-ssr/show_clock',
-            ...     timeout_seconds=300, device=device)
-        '''
+                # Validate server connectivity
+                >>> fu_device.validateserver(
+                ...     target='ftp://10.1.7.250//auto/tftp-ssr/show_clock',
+                ...     timeout_seconds=300, device=device)
+        """
 
         logger.info('Verifying if server can be reached and if a temp file can '
                     'be created')
@@ -401,13 +401,13 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         # Check server created file
         try:
-            futlinux.check_file(to_directory_url)
+            futlinux.check_file(target)
         except Exception as e:
             raise type(e)("Server created file can't be checked") from e
 
         # Delete server created file
         try:
-            futlinux.deletefile(to_directory_url)
+            futlinux.deletefile(target)
         except Exception as e:
             raise type(e)("Server created file can't be deleted") from e
 

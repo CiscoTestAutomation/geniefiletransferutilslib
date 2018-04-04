@@ -99,8 +99,8 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute.side_effect = self.mapper
 
         # Call copyfiles
-        self.fu_device.copyfile(from_file_url='disk0:/fake_config_2.tcl',
-            to_file_url='ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl',
+        self.fu_device.copyfile(source='disk0:/fake_config_2.tcl',
+            destination='ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl',
             timeout_seconds='300', device=self.device)
 
     def test_dir(self):
@@ -108,7 +108,7 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
 
-        directory_output = self.fu_device.dir(from_directory_url='disk0:',
+        directory_output = self.fu_device.dir(target='disk0:',
             timeout_seconds=300, device=self.device)
 
         self.assertEqual(sorted(directory_output), sorted(self.dir_output))
@@ -118,7 +118,7 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
 
-        file_details = self.fu_device.stat(file_url='disk0:memleak.tcl',
+        file_details = self.fu_device.stat(target='disk0:memleak.tcl',
           timeout_seconds=300, device=self.device)
 
         self.assertEqual(file_details['index'],
@@ -132,7 +132,7 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
 
-        self.fu_device.deletefile(file_url='disk0:fake_config.tcl',
+        self.fu_device.deletefile(target='disk0:fake_config.tcl',
           timeout_seconds=300, device=self.device)
 
     def test_renamefile(self):
@@ -143,8 +143,8 @@ class test_filetransferutils(unittest.TestCase):
         with self.assertRaisesRegex(
             NotImplementedError, "The fileutils module filetransferutils."
             "plugins.iosxr.fileutils does not implement renamefile."):
-            self.fu_device.renamefile(from_file_url='disk0:fake_config.tcl',
-              to_file_url='memleak.tcl',
+            self.fu_device.renamefile(source='disk0:fake_config.tcl',
+              destination='memleak.tcl',
                 timeout_seconds=300, device=self.device)
 
     @patch('filetransferutils.plugins.fileutils.FileUtils.validateserver',
@@ -155,7 +155,7 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute.side_effect = self.mapper
 
         self.fu_device.validateserver(
-            to_directory_url='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
+            target='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
             timeout_seconds=300, device=self.device)
 
 

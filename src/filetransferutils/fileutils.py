@@ -52,7 +52,7 @@ class FileUtils(FileUtilsBase):
             >>> from ..fileutils import FileUtils
 
               # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
-              >>> cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
+              >>> cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
               >>> FileUtils.send_cli_to_device(cli=cmd,
               ...   timeout_seconds=timeout_seconds, **kwargs)
@@ -175,14 +175,14 @@ class FileUtils(FileUtilsBase):
         parsed_url = urlparse(url)
         return parsed_url
 
-    def get_server(self, from_file_url, to_file_url):
+    def get_server(self, source, destination):
         """ Get the server address from the provided URLs
 
         Parameters
         ----------
-            from_file_url: `str`
+            source: `str`
               URL path of the from location
-            to_file_url: `str`
+            destination: `str`
               URL path of the to location
 
 
@@ -201,7 +201,7 @@ class FileUtils(FileUtilsBase):
         >>> from ..fileutils import FileUtils
 
         # Get the server
-          >>> output = FileUtils.get_server(from_file_url, to_file_url)
+          >>> output = FileUtils.get_server(source, destination)
 
           >>> output
           ...   '10.1.7.250'
@@ -210,7 +210,7 @@ class FileUtils(FileUtilsBase):
         used_server = None
 
         # Extract the server address to be used later for authentication
-        new_list = [from_file_url, to_file_url]
+        new_list = [source, destination]
         for item in new_list:
             parsed = self.parse_url(item)
             # Validate parsed address is a valid IP address
@@ -226,6 +226,6 @@ class FileUtils(FileUtilsBase):
             # If both URLS have no valid IP addres, raise an exception
             raise Exception("No valid IP address has been detected in the "
                 "passed URLS '{from_URL}' & '{to_URL}'".format(
-                    from_URL=from_file_url, to_URL=to_file_url))
+                    from_URL=source, to_URL=destination))
 
         return used_server

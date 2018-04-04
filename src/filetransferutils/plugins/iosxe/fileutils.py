@@ -19,7 +19,7 @@ except ImportError:
 
 class FileUtils(FileUtilsDeviceBase):
 
-    def copyfile(self, from_file_url, to_file_url, timeout_seconds=300,
+    def copyfile(self, source, destination, timeout_seconds=300,
         vrf=None, *args, **kwargs):
         """ Copy a file to/from IOSXE device
 
@@ -28,9 +28,9 @@ class FileUtils(FileUtilsDeviceBase):
 
         Parameters
         ----------
-            from_file_url: `str`
+            source: `str`
                 Full path to the copy 'from' location
-            to_file_url: `str`
+            destination: `str`
                 Full path to the copy 'to' location
             timeout_seconds: `str`
                 The number of seconds to wait before aborting the operation
@@ -57,38 +57,38 @@ class FileUtils(FileUtilsDeviceBase):
 
             # copy file from device to server
             >>> fu_device.copyfile(
-            ...     from_file_url='flash:/memleak.tcl',
-            ...     to_file_url='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
+            ...     source='flash:/memleak.tcl',
+            ...     destination='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
             ...     timeout_seconds='300', device=device)
 
             # copy file from server to device
             >>> fu_device.copyfile(
-            ...     from_file_url='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
-            ...     to_file_url='flash:/new_file.tcl',
+            ...     source='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
+            ...     destination='flash:/new_file.tcl',
             ...     timeout_seconds='300', device=device)
 
             # copy file from server to device running configuration
             >>> fu_device.copyfile(
-            ...     from_file_url='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
-            ...     to_file_url='running-config',
+            ...     source='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
+            ...     destination='running-config',
             ...     timeout_seconds='300', device=device)
         """
 
         # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
         if vrf:
-            cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=from_file_url,
-                t=to_file_url, vrf_value=vrf)
+            cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
+                t=destination, vrf_value=vrf)
         else:
-            cmd = 'copy {f} {t}'.format(f=from_file_url, t=to_file_url)
+            cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
         # Extract the server address to be used later for authentication
-        used_server = self.get_server(from_file_url, to_file_url)
+        used_server = self.get_server(source, destination)
 
-        super().copyfile(from_file_url=from_file_url, to_file_url=to_file_url,
+        super().copyfile(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
             *args, **kwargs)
 
-    def dir(self, from_directory_url, timeout_seconds=300, *args, **kwargs):
+    def dir(self, target, timeout_seconds=300, *args, **kwargs):
         """ Retrieve filenames contained in a directory.
 
         Do not recurse into subdirectories, only list files at the top level
@@ -96,8 +96,8 @@ class FileUtils(FileUtilsDeviceBase):
 
         Parameters
         ----------
-            file_url : `str`
-                The URL of the file whose details are to be retrieved.
+            target : `str`
+                The directory whose details are to be retrieved.
 
             timeout_seconds : `int`
                 The number of seconds to wait before aborting the operation.
@@ -123,7 +123,7 @@ class FileUtils(FileUtilsDeviceBase):
             >>> fu_device = FileUtils.from_device(device)
 
             # list all files on the device directory 'flash:'
-            >>> directory_output = fu_device.dir(from_directory_url='flash:',
+            >>> directory_output = fu_device.dir(target='flash:',
             ...     timeout_seconds=300, device=device)
 
             >>> directory_output
@@ -142,11 +142,11 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-        dir_output = super().parsed_dir(from_directory_url, timeout_seconds,
+        dir_output = super().parsed_dir(target, timeout_seconds,
             Dir, *args, **kwargs)
 
         # Extract the files location requested
-        output = self.parse_url(from_directory_url)
+        output = self.parse_url(target)
 
         # Construct the directory name
         directory = output.scheme + ":/"
@@ -159,12 +159,12 @@ class FileUtils(FileUtilsDeviceBase):
 
         return new_list
 
-    def stat(self, file_url, timeout_seconds=300, *args, **kwargs):
+    def stat(self, target, timeout_seconds=300, *args, **kwargs):
         """ Retrieve file details such as length and permissions.
 
         Parameters
         ----------
-            file_url : `str`
+            target : `str`
                 The URL of the file whose details are to be retrieved.
 
             timeout_seconds : `int`
@@ -192,7 +192,7 @@ class FileUtils(FileUtilsDeviceBase):
             >>> fu_device = FileUtils.from_device(device)
 
             # list the file details on the device 'flash:' directory
-            >>> directory_output = fu_device.stat(file_url='flash:memleak.tcl',
+            >>> directory_output = fu_device.stat(target='flash:memleak.tcl',
             ...     timeout_seconds=300, device=device)
 
             >>> directory_output['size']
@@ -206,21 +206,21 @@ class FileUtils(FileUtilsDeviceBase):
 
         """
 
-        files = super().stat(file_url, timeout_seconds, Dir, *args, **kwargs)
+        files = super().stat(target, timeout_seconds, Dir, *args, **kwargs)
 
         # Extract the file name requested
-        output = self.parse_url(file_url)
+        output = self.parse_url(target)
         directory = output.scheme + ":/"
         file_details = files['dir'][directory]['files'][output.path]
 
         return file_details
 
-    def deletefile(self, file_url, timeout_seconds=300, *args, **kwargs):
+    def deletefile(self, target, timeout_seconds=300, *args, **kwargs):
         """ Delete a file
 
         Parameters
         ----------
-            file_url : `str`
+            target : `str`
                 The URL of the file whose details are to be retrieved.
 
             timeout_seconds : `int`
@@ -246,23 +246,23 @@ class FileUtils(FileUtilsDeviceBase):
 
             # delete a specific file on device directory 'flash:'
             >>> directory_output = fu_device.deletefile(
-            ...     file_url='flash:memleak_bckp.tcl',
+            ...     target='flash:memleak_bckp.tcl',
             ...     timeout_seconds=300, device=device)
 
         """
 
-        super().deletefile(file_url, timeout_seconds, *args, **kwargs)
+        super().deletefile(target, timeout_seconds, *args, **kwargs)
 
-    def renamefile(self, from_file_url, to_file_url, timeout_seconds=300, *args,
+    def renamefile(self, source, destination, timeout_seconds=300, *args,
         **kwargs):
         """ Rename a file
 
         Parameters
         ----------
-            from_file_url : `str`
+            source : `str`
                 The URL of the file to be renamed.
 
-            to_file_url : `str`
+            destination : `str`
                 The URL of the new file name.
 
             timeout_seconds : `int`
@@ -287,23 +287,23 @@ class FileUtils(FileUtilsDeviceBase):
             >>> fu_device = FileUtils.from_device(device)
 
             # rename the file on the device 'flash:' directory
-            >>> fu_device.renamefile(file_url='flash:memleak.tcl',
-            ...     to_file_url='memleak_backup.tcl'
+            >>> fu_device.renamefile(target='flash:memleak.tcl',
+            ...     destination='memleak_backup.tcl'
             ...     timeout_seconds=300, device=device)
 
         """
         # rename bootflash:memleak.tcl memleak_j.tcl
-        cmd = 'rename {f} {u}'.format(f=from_file_url, u=to_file_url)
+        cmd = 'rename {f} {u}'.format(f=source, u=destination)
 
-        super().renamefile(from_file_url, to_file_url, timeout_seconds, cmd, 
+        super().renamefile(source, destination, timeout_seconds, cmd, 
             *args, **kwargs)
 
-    def chmod(self, file_url, mode, timeout_seconds=300, *args, **kwargs):
+    def chmod(self, target, mode, timeout_seconds=300, *args, **kwargs):
         """ Change file permissions
 
         Parameters
         ----------
-            file_url : `str`
+            target : `str`
                 The URL of the file whose permissions are to be changed.
 
             mode : `int`
@@ -321,8 +321,7 @@ class FileUtils(FileUtilsDeviceBase):
         raise NotImplementedError("The fileutils module {} "
             "does not implement chmod.".format(self.__module__))
 
-    def validateserver(self, to_directory_url, timeout_seconds=300, *args,
-        **kwargs):
+    def validateserver(self, target, timeout_seconds=300, *args, **kwargs):
         ''' Make sure that the given server information is valid
 
 
@@ -333,8 +332,7 @@ class FileUtils(FileUtilsDeviceBase):
 
         Parameters
         ----------
-            cmd (`str`):  Command to be executed on the device 
-            to_directory_url (`str`):  File path including the protocol,
+            target (`str`):  File path including the protocol,
                 server and file location.
             timeout_seconds: `str`
                 The number of seconds to wait before aborting the operation.
@@ -358,14 +356,14 @@ class FileUtils(FileUtilsDeviceBase):
 
             # Validate server connectivity
             >>> fu_device.validateserver(
-            ...     to_directory_url='ftp://10.1.6.242//auto/tftp-ssr/show_clock',
+            ...     target='ftp://10.1.6.242//auto/tftp-ssr/show_clock',
             ...     timeout_seconds=300, device=device)
         '''
 
         # Patch up the command together
         # show clock | redirect ftp://10.1.6.242//auto/tftp-ssr/show_clock
-        cli = "show clock | redirect {e}".format(e=to_directory_url)
+        cmd = "show clock | redirect {e}".format(e=target)
 
-        self.parse_url(to_directory_url)
-        super().validateserver(cli, timeout_seconds, to_directory_url, *args,
+        self.parse_url(target)
+        super().validateserver(cmd, timeout_seconds, target, *args,
             **kwargs)

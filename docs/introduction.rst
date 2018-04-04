@@ -64,42 +64,42 @@ Now the API can be called for various operations such as:
 
     .. code-block:: python
 
-        fu_device.copyfile(from_file_url='URL to copy from',
-                           to_file_url='URL to copy to',
+        fu_device.copyfile(source='URL to copy from',
+                           destination='URL to copy to',
                            timeout_seconds='timeout in seconds',
                            device='<device object>')
 
         Example:
         -------
-        fu_device.copyfile(from_file_url='flash:/memleak.tcl',
-            to_file_url='ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl',
+        fu_device.copyfile(source='flash:/memleak.tcl',
+            destination='ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl',
             timeout_seconds=300, device=self.device)
 
 * List all the files/folders under the specified directory
 
     .. code-block:: python
 
-        directory_output = fu_device.dir(from_directory_url='directory name',
+        directory_output = fu_device.dir(target='directory name',
                                          timeout_seconds='timeout in seconds',
                                          device='<device object>')
 
         Example:
         -------
-        directory_output = fu_device.dir(from_directory_url='flash:',
+        directory_output = fu_device.dir(target='flash:',
             timeout_seconds=300, device=self.device)
 
 * Retrieve file details on a device directory
 
     .. code-block:: python
 
-        file_details = fu_device.stat(file_url='file URL path',
+        file_details = fu_device.stat(target='file URL path',
                                       timeout_seconds='timeout in seconds',
                                       device='<device object>')
 
         Example:
         -------
         # Call the stat function
-        file_details = fu_device.stat(file_url='flash:/memleak.tcl',
+        file_details = fu_device.stat(target='flash:/memleak.tcl',
             timeout_seconds=300, device=self.device)
 
         # Retrieve the file details
@@ -114,30 +114,30 @@ Now the API can be called for various operations such as:
 
     .. code-block:: python
 
-        fu_device.deletefile(file_url='file URL path',
+        fu_device.deletefile(target='file URL path',
                              timeout_seconds='timeout in seconds',
                              device='<device object>')
 
         Example:
         -------
         # Call the deletefile function
-        fu_device.deletefile(file_url='flash:/memleak.tcl',
+        fu_device.deletefile(target='flash:/memleak.tcl',
             timeout_seconds=300, device=self.device)
 
 * Rename file on device directory
 
     .. code-block:: python
 
-        fu_device.renamefile(from_file_url='file URL path',
-                             to_file_url='file new name',
+        fu_device.renamefile(source='file URL path',
+                             destination='file new name',
                              timeout_seconds='timeout in seconds',
                              device='<device object>')
 
         Example:
         -------
         # Call the renamefile function
-        fu_device.renamefile(from_file_url='flash:/memleak.tcl',
-            to_file_url='new_file.tcl',
+        fu_device.renamefile(source='flash:/memleak.tcl',
+            destination='new_file.tcl',
             timeout_seconds=300, device=self.device)
 
 * Validate connectivity to remote server
@@ -147,7 +147,7 @@ Now the API can be called for various operations such as:
 
     .. code-block:: python
 
-        fu_device.validateserver(file_path='file URL path on the remote server',
+        fu_device.validateserver(target='file URL path on the remote server',
                                  timeout_seconds='timeout in seconds',
                                  device='<device object>')
 
@@ -155,7 +155,7 @@ Now the API can be called for various operations such as:
         -------
         # Call the validateserver function
         fu_device.validateserver(
-            file_path='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
+            target='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
             timeout_seconds=300, device=self.device)
 
 

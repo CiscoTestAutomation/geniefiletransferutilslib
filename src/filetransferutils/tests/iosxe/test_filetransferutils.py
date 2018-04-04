@@ -116,8 +116,8 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute.side_effect = self.mapper
 
         # Call copyfiles
-        self.fu_device.copyfile(from_file_url='flash:/memleak.tcl',
-            to_file_url='ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl',
+        self.fu_device.copyfile(source='flash:/memleak.tcl',
+            destination='ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl',
             timeout_seconds='300', device=self.device)
 
     def test_dir(self):
@@ -125,7 +125,7 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
 
-        directory_output = self.fu_device.dir(from_directory_url='flash:',
+        directory_output = self.fu_device.dir(target='flash:',
             timeout_seconds=300, device=self.device)
 
         self.assertEqual(sorted(directory_output), sorted(self.dir_output))
@@ -135,7 +135,7 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
 
-        file_details = self.fu_device.stat(file_url='flash:memleak.tcl',
+        file_details = self.fu_device.stat(target='flash:memleak.tcl',
           timeout_seconds=300, device=self.device)
 
         self.assertEqual(file_details['last_modified_date'],
@@ -149,7 +149,7 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
 
-        self.fu_device.deletefile(file_url='flash:memleak.tcl',
+        self.fu_device.deletefile(target='flash:memleak.tcl',
           timeout_seconds=300, device=self.device)
 
     def test_renamefile(self):
@@ -157,8 +157,8 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute = Mock()
         self.device.execute.side_effect = self.mapper
 
-        self.fu_device.renamefile(from_file_url='flash:memleak.tcl',
-          to_file_url='new_file.tcl',
+        self.fu_device.renamefile(source='flash:memleak.tcl',
+          destination='new_file.tcl',
           timeout_seconds=300, device=self.device)
 
     @patch('filetransferutils.plugins.fileutils.FileUtils.validateserver',
@@ -169,7 +169,7 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute.side_effect = self.mapper
 
         self.fu_device.validateserver(
-            to_directory_url='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
+            target='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
             timeout_seconds=300, device=self.device)
 
 
