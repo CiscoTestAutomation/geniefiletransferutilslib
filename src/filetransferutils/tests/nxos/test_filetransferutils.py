@@ -81,6 +81,15 @@ class test_filetransferutils(unittest.TestCase):
     raw6 = {'futlinux.check_file.return_value': '',
         'futlinux.deletefile.return_value': ''}
 
+    raw7 = {'execute.return_value': '''
+        copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management
+        Trying to connect to tftp server......
+        Connection to Server Established.
+        [                         ]         0.50KB[#                        ]         4.50KB[##                       ]         8.50KB[###                      ]        12.50KB                                                                                    TFTP put operation was successful
+        Copy complete, now saving to disk (please wait)...
+        Copy complete.
+    '''}
+
     outputs = {}
     outputs['copy bootflash:/virtual-instance.conf '
         'ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management']\
@@ -89,6 +98,7 @@ class test_filetransferutils(unittest.TestCase):
     outputs['delete bootflash:new_file.tcl'] = raw3
     outputs['move bootflash:mem_leak.tcl new_file.tcl'] = raw4
     outputs['show clock > ftp://1.1.1.1//auto/tftp-ssr/show_clock vrf management'] = raw5
+    outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management'] = raw7
 
     def mapper(self, key, timeout=None, reply= None):
         return self.outputs[key]
@@ -153,6 +163,15 @@ class test_filetransferutils(unittest.TestCase):
         self.fu_device.validateserver(
             target='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
             timeout_seconds=300, device=self.device)
+
+    def test_copyconfiguration(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        self.fu_device.copyconfiguration(source='running-config',
+          destination='tftp://10.1.7.250//auto/tftp-ssr/test_config.py',
+          timeout_seconds=300, device=self.device)
 
 
 if __name__ == '__main__':

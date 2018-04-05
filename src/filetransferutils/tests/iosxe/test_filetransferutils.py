@@ -98,6 +98,14 @@ class test_filetransferutils(unittest.TestCase):
     raw6 = {'futlinux.check_file.return_value': '',
       'futlinux.deletefile.return_value': ''}
 
+    raw7 = {'execute.return_value': '''
+         copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py
+        Address or name of remote host [10.1.7.250]? 
+        Destination filename [/auto/tftp-ssr/test_config.py]? 
+        !!
+        27092 bytes copied in 6.764 secs (4005 bytes/sec)
+    '''}
+
     outputs = {}
     outputs['copy flash:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl']\
       = raw1
@@ -106,6 +114,8 @@ class test_filetransferutils(unittest.TestCase):
     outputs['rename flash:memleak.tcl new_file.tcl'] = raw4
     outputs['show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock'] = \
       raw5
+    outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py'] = \
+      raw7
 
     def mapper(self, key, timeout=None, reply= None):
         return self.outputs[key]
@@ -171,6 +181,15 @@ class test_filetransferutils(unittest.TestCase):
         self.fu_device.validateserver(
             target='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
             timeout_seconds=300, device=self.device)
+
+    def test_copyconfiguration(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        self.fu_device.copyconfiguration(source='running-config',
+          destination='tftp://10.1.7.250//auto/tftp-ssr/test_config.py',
+          timeout_seconds=300, device=self.device)
 
 
 if __name__ == '__main__':

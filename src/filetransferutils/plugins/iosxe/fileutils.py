@@ -367,3 +367,76 @@ class FileUtils(FileUtilsDeviceBase):
         self.parse_url(target)
         super().validateserver(cmd, timeout_seconds, target, *args,
             **kwargs)
+
+    def copyconfiguration(self, source, destination, timeout_seconds=300,
+        *args, **kwargs):
+        """ Copy configuration to/from device
+
+        Copy configuration on the device or between locations supported on the
+        device and on the server.
+
+        Parameters
+        ----------
+            source: `str`
+                Full path to the copy 'from' location
+            destination: `str`
+                Full path to the copy 'to' location
+            timeout_seconds: `str`
+                The number of seconds to wait before aborting the operation
+            vrf: `str`
+                Vrf to be used during copy operation
+
+        Returns
+        -------
+            `None`
+
+        Raises
+        ------
+            Exception
+                When a device object is not present or device execution
+                encountered an unexpected behavior.
+
+        Examples
+        --------
+            # FileUtils
+            >>> from ats.utils.fileutils import FileUtils
+
+            # Instantiate a filetransferutils instance for NXOS device
+            >>> from ats.utils.fileutils import FileUtils
+            >>> fu_device = FileUtils.from_device(device)
+
+            # copy file from server to device running configuration
+            >>> fu_device.copyconfiguration(
+            ...     source='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
+            ...     destination='running-config',
+            ...     timeout_seconds='300', device=device)
+
+            # copy running-configuration to device memory
+            >>> fu_device.copyconfiguration(
+            ...     source='running-config',
+            ...     destination='bootflash:filename',
+            ...     timeout_seconds='300', device=device)
+
+            # copy startup-configuration running-configuration
+            >>> fu_device.copyconfiguration(
+            ...     source='startup-config',
+            ...     destination='running-config',
+            ...     timeout_seconds='300', device=device)w
+        """
+
+        # Extract the server address to be used later for authentication
+        try:
+            used_server = self.get_server(source, destination)
+        except:
+            # We catch exception in the case where we copy configurations
+            # between running and startup on the device
+            used_server = None
+            pass
+
+        # Build copy command
+        # Example - copy running-configuration bootflash:tempfile1
+        cmd = 'copy {f} {t}'.format(f=source, t=destination)
+
+        super().copyconfiguration(source=source, destination=destination,
+            timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
+            *args, **kwargs)

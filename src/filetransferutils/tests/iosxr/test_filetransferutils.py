@@ -82,6 +82,17 @@ class test_filetransferutils(unittest.TestCase):
     raw5 = {'futlinux.check_file.return_value': '',
         'futlinux.deletefile.return_value': ''}
 
+    raw6 = {'execute.return_value':'''
+        copy running-config ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl
+        Host name or IP address (control-c to abort): [10.1.6.242;default]?
+        Destination username: []?rcpuser
+        Destination password: 
+        Destination file name (control-c to abort): [/auto/tftp-ssr/fake_config_2.tcl]?
+        Building configuration.
+        349 lines built in 1 second
+        [OK]
+    '''}
+
     outputs = {}
     outputs['copy disk0:/fake_config_2.tcl '
         'ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl'] = raw1
@@ -89,6 +100,8 @@ class test_filetransferutils(unittest.TestCase):
     outputs['delete disk0:fake_config.tcl'] = raw3
     outputs['show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock'] = \
         raw4
+    outputs['copy running-config ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl'] = \
+        raw6
 
     def mapper(self, key, timeout=None, reply= None):
         return self.outputs[key]
@@ -157,6 +170,15 @@ class test_filetransferutils(unittest.TestCase):
         self.fu_device.validateserver(
             target='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
             timeout_seconds=300, device=self.device)
+
+    def test_copyconfiguration(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        self.fu_device.copyconfiguration(source='running-config',
+          destination='ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl',
+          timeout_seconds=300, device=self.device)
 
 
 if __name__ == '__main__':
