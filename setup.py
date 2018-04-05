@@ -187,7 +187,7 @@ setup(
     },
 
     # package dependencies
-    install_requires =  [],
+    install_requires =  ['ats.utils >= 4.1.0'],
 
     # any additional groups of dependencies.
     # install using: $ pip install -e .[dev]

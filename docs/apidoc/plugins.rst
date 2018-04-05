@@ -1,5 +1,5 @@
-plugiuns
-========
+plugins
+=======
 
 module contents
 ---------------
