@@ -420,12 +420,17 @@ class FileUtils(FileUtilsDeviceBase):
         except:
             # We catch exception in the case where we copy configurations
             # between running and startup on the device
+            used_server = None
+            vrf = None
             pass
 
         # Build copy command
         # Example - copy running-configuration bootflash:tempfile1
-        cmd = 'copy {f} {t} vrf {vrf}'.format(f=source, t=destination,
-            vrf=vrf)
+        if vrf:
+            cmd = 'copy {f} {t} vrf {vrf}'.format(f=source, t=destination,
+                vrf=vrf)
+        else:
+            cmd = 'copy {f} {t}'.format(f=source, t=destination)     
 
         super().copyconfiguration(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,
