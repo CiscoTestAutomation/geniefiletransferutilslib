@@ -22,40 +22,40 @@ class FileUtils(FileUtilsBase):
       timeout_seconds=300, **kwargs):
         """ Send command to a particular device and deal with its result
 
-        Parameters
-        ----------
-            cli: `str`
-              Full command to be executed on the device
-            invalid: `str`
-              Any invalid patterns need to be caught during execution
-            timeout_seconds: `str`
-              The number of seconds to wait before aborting the operation.
-            used_server: `str`
-              Server address/name
+            Parameters
+            ----------
+                cli: `str`
+                  Full command to be executed on the device
+                invalid: `str`
+                  Any invalid patterns need to be caught during execution
+                timeout_seconds: `str`
+                  The number of seconds to wait before aborting the operation.
+                used_server: `str`
+                  Server address/name
 
-        Returns
-        -------
-            `None`
+            Returns
+            -------
+                `None`
 
-        Raises
-        ------
-            Exception
-                When a device object is not present or device execution encountered
-                an unexpected behavior.
+            Raises
+            ------
+                Exception
+                    When a device object is not present or device execution encountered
+                    an unexpected behavior.
 
-            ValueError
-                When a device execution output shows one of the invalid patterns.
+                ValueError
+                    When a device execution output shows one of the invalid patterns.
 
-        Examples
-        --------
-            # FileUtils
-            >>> from ..fileutils import FileUtils
+            Examples
+            --------
+                # FileUtils
+                >>> from ..fileutils import FileUtils
 
-              # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
-              >>> cmd = 'copy {f} {t}'.format(f=source, t=destination)
+                  # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl
+                  >>> cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
-              >>> FileUtils.send_cli_to_device(cli=cmd,
-              ...   timeout_seconds=timeout_seconds, **kwargs)
+                  >>> FileUtils.send_cli_to_device(cli=cmd,
+                  ...   timeout_seconds=timeout_seconds, **kwargs)
         """
 
         # Extract device from the keyword arguments, if not passed raise an
@@ -145,35 +145,35 @@ class FileUtils(FileUtilsBase):
     def parse_url(self, url):
         """ Parse the given url
 
-        Parameters
-        ----------
-            url: `str`
-              Full url to be parsed
+            Parameters
+            ----------
+                url: `str`
+                  Full url to be parsed
 
-        Returns
-        -------
-            ParseResult class with the following keyword arguments
-            (scheme='', netloc='', path='', params='', query='', fragment='')
+            Returns
+            -------
+                ParseResult class with the following keyword arguments
+                (scheme='', netloc='', path='', params='', query='', fragment='')
 
-        Raises
-        ------
-            None
+            Raises
+            ------
+                None
 
-        Examples
-        --------
-            # FileUtils
-            >>> from ..fileutils import FileUtils
+            Examples
+            --------
+                # FileUtils
+                >>> from ..fileutils import FileUtils
 
-            # Parse the URL
-              >>> output = FileUtils.parse_url(file_url)
-                      ParseResult(scheme='flash', netloc='', path='memleak.tcl',
-                      params='', query='', fragment='')
+                # Parse the URL
+                  >>> output = FileUtils.parse_url(file_url)
+                          ParseResult(scheme='flash', netloc='', path='memleak.tcl',
+                          params='', query='', fragment='')
 
-              >>> output.scheme
-              ...   'flash'
+                  >>> output.scheme
+                  ...   'flash'
 
-              >>> output.path
-              ...   'memleak.tcl'
+                  >>> output.path
+                  ...   'memleak.tcl'
 
         """
         parsed_url = urlparse(url)
@@ -182,33 +182,33 @@ class FileUtils(FileUtilsBase):
     def get_server(self, source, destination):
         """ Get the server address from the provided URLs
 
-        Parameters
-        ----------
-            source: `str`
-              URL path of the from location
-            destination: `str`
-              URL path of the to location
+            Parameters
+            ----------
+                source: `str`
+                  URL path of the from location
+                destination: `str`
+                  URL path of the to location
 
 
-        Returns
-        -------
-            used_server: `str`
-              String of the used server
+            Returns
+            -------
+                used_server: `str`
+                  String of the used server
 
-        Raises
-        ------
-          None
+            Raises
+            ------
+              None
 
-        Examples
-        --------
-        # FileUtils
-        >>> from ..fileutils import FileUtils
+            Examples
+            --------
+            # FileUtils
+            >>> from ..fileutils import FileUtils
 
-        # Get the server
-          >>> output = FileUtils.get_server(source, destination)
+            # Get the server
+              >>> output = FileUtils.get_server(source, destination)
 
-          >>> output
-          ...   '10.1.7.250'
+              >>> output
+              ...   '10.1.7.250'
 
         """
         used_server = None

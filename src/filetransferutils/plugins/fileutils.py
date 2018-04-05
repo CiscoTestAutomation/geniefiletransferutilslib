@@ -32,8 +32,8 @@ logger = logging.getLogger(__name__)
 
 class FileUtils(FileUtilsCommonDeviceBase):
 
-    def copyfile(self, source, destination, timeout_seconds, cmd,
-        used_server, *args, **kwargs):
+    def copyfile(self, source, destination, timeout_seconds, cmd, used_server,
+        *args, **kwargs):
         """ Copy a file to/from NXOS device
 
             Copy any file to/from a device to any location supported on the
@@ -95,8 +95,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
         except Exception as e:
             raise type(e)('{}'.format(e))
 
-    def parsed_dir(self, target, timeout_seconds, dir_output, *args,
-        **kwargs):
+    def parsed_dir(self, target, timeout_seconds, dir_output, *args, **kwargs):
         """ Retrieve filenames contained in a directory.
 
             Do not recurse into subdirectories, only list files at the top level
@@ -138,12 +137,9 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 ...     timeout_seconds=300, device=device)
 
                 >>> directory_output['dir']['flash:/']['files']
-
-                EX
-                --
-                (Pdb) directory_output['dir']['flash:/']['files']['boothelper.log']
-                {'index': '69699', 'permissions': '-rw-', 'size': '76',
-                 'last_modified_date': 'Mar 20 2018 10:25:46 +00:00'}
+                ...     (Pdb) directory_output['dir']['flash:/']['files']['boothelper.log']
+                        {'index': '69699', 'permissions': '-rw-', 'size': '76',
+                        'last_modified_date': 'Mar 20 2018 10:25:46 +00:00'}
 
         """
 
@@ -204,13 +200,9 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 ...     timeout_seconds=300, device=device)
 
                 >>> directory_output['size']
+                ...     '104260'
                 >>> directory_output['permissions']
-
-                EX
-                --
-                (Pdb) directory_output
-                {'last_modified_date': 'Mar 20 2018 10:26:01 +00:00',
-                 'size': '104260', 'permissions': '-rw-', 'index': '69705'}
+                ...     '-rw-'
 
         """
 
@@ -320,20 +312,20 @@ class FileUtils(FileUtilsCommonDeviceBase):
     def chmod(self, target, mode, timeout_seconds, *args, **kwargs):
         """ Change file permissions
 
-        Parameters
-        ----------
-            target : `str`
-                The URL of the file whose permissions are to be changed.
+            Parameters
+            ----------
+                target : `str`
+                    The URL of the file whose permissions are to be changed.
 
-            mode : `int`
-                Same format as `os.chmod`.
+                mode : `int`
+                    Same format as `os.chmod`.
 
-            timeout_seconds : `int`
-                Maximum allowed amount of time for the operation.
+                timeout_seconds : `int`
+                    Maximum allowed amount of time for the operation.
 
-        Returns
-        -------
-            `None` if operation succeeded.
+            Returns
+            -------
+                `None` if operation succeeded.
 
         """
 
@@ -347,7 +339,6 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
     def validateserver(self, cmd, target, timeout_seconds=300, *args, **kwargs):
         """ Make sure that the given server information is valid
-
 
             Function that verifies if the server information given is valid, and if
             the device can connect to it. It does this by saving `show clock`
@@ -418,56 +409,56 @@ class FileUtils(FileUtilsCommonDeviceBase):
         timeout_seconds=300, *args, **kwargs):
         """ Copy configuration to/from device
 
-        Copy configuration on the device or between locations supported on the
-        device and on the server.
+            Copy configuration on the device or between locations supported on the
+            device and on the server.
 
-        Parameters
-        ----------
-            source: `str`
-                Full path to the copy 'from' location
-            destination: `str`
-                Full path to the copy 'to' location
-            timeout_seconds: `str`
-                The number of seconds to wait before aborting the operation
-            vrf: `str`
-                Vrf to be used during copy operation
+            Parameters
+            ----------
+                source: `str`
+                    Full path to the copy 'from' location
+                destination: `str`
+                    Full path to the copy 'to' location
+                timeout_seconds: `str`
+                    The number of seconds to wait before aborting the operation
+                vrf: `str`
+                    Vrf to be used during copy operation
 
-        Returns
-        -------
-            `None`
+            Returns
+            -------
+                `None`
 
-        Raises
-        ------
-            Exception
-                When a device object is not present or device execution
-                encountered an unexpected behavior.
+            Raises
+            ------
+                Exception
+                    When a device object is not present or device execution
+                    encountered an unexpected behavior.
 
-        Examples
-        --------
-            # FileUtils
-            >>> from ats.utils.fileutils import FileUtils
+            Examples
+            --------
+                # FileUtils
+                >>> from ats.utils.fileutils import FileUtils
 
-            # Instantiate a filetransferutils instance for NXOS device
-            >>> from ats.utils.fileutils import FileUtils
-            >>> fu_device = FileUtils.from_device(device)
+                # Instantiate a filetransferutils instance for NXOS device
+                >>> from ats.utils.fileutils import FileUtils
+                >>> fu_device = FileUtils.from_device(device)
 
-            # copy file from server to device running configuration
-            >>> fu_device.copyconfiguration(
-            ...     source='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
-            ...     destination='running-config',
-            ...     timeout_seconds='300', device=device)
+                # copy file from server to device running configuration
+                >>> fu_device.copyconfiguration(
+                ...     source='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
+                ...     destination='running-config',
+                ...     timeout_seconds='300', device=device)
 
-            # copy running-configuration to device memory
-            >>> fu_device.copyconfiguration(
-            ...     from_file_url='running-config',
-            ...     to_file_url='bootflash:filename',
-            ...     timeout_seconds='300', device=device)
+                # copy running-configuration to device memory
+                >>> fu_device.copyconfiguration(
+                ...     from_file_url='running-config',
+                ...     to_file_url='bootflash:filename',
+                ...     timeout_seconds='300', device=device)
 
-            # copy startup-configuration running-configuration
-            >>> fu_device.copyconfiguration(
-            ...     from_file_url='startup-config',
-            ...     to_file_url='running-config',
-            ...     timeout_seconds='300', device=device)w
+                # copy startup-configuration running-configuration
+                >>> fu_device.copyconfiguration(
+                ...     from_file_url='startup-config',
+                ...     to_file_url='running-config',
+                ...     timeout_seconds='300', device=device)
         """
 
         try:
