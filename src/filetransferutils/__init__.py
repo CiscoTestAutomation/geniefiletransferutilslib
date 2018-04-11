@@ -10,10 +10,10 @@ Description:
     http://wwwin-pyats.cisco.com/cisco-shared/genie/latest/apidoc/filetransferutils/filetransferutils.html
 '''
 
-__version__ = '1.0.0'
+__version__ = '2.0.0'
 __author__ = """Jean-Benoit Aubin (jeaubin@cisco.com)
                 Karim Mohamed     (karmoham@cisco.com)"""
-__date__ = "January 2018"
+__date__ = "April 2018"
 __contact__ = 'asg-genie-support@cisco.com'
 __copyright__ = 'Cisco Systems, Inc. Cisco Confidential'
 
