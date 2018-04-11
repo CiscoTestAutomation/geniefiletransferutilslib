@@ -349,11 +349,15 @@ class FileUtils(FileUtilsDeviceBase):
                 ...     timeout_seconds=300, device=device)
         '''
 
+        # Extract the server address to be used later for authentication
+        used_server = self.get_server(target)
+
         # Patch up the command together
         # show clock | file ftp://10.1.6.242//auto/tftp-ssr/show_clock
         cmd = "show clock | file {e}".format(e=target)
 
-        super().validateserver(cmd, timeout_seconds, target, *args,
+        super().validateserver(cmd=cmd, target=target,
+            timeout_seconds=timeout_seconds, used_server=used_server, *args,
             **kwargs)
 
     def copyconfiguration(self, source, destination, timeout_seconds=300,
@@ -419,7 +423,6 @@ class FileUtils(FileUtilsDeviceBase):
             # We catch exception in the case where we copy configurations
             # between running and startup on the device
             used_server = None
-            pass
 
         # Build copy command
         # Example - copy running-configuration bootflash:tempfile1

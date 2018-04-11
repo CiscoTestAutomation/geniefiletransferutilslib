@@ -22,7 +22,7 @@ class FileUtils(FileUtilsBase):
       timeout_seconds=300, **kwargs):
         """ Send command to a particular device and deal with its result
 
-            Parameters
+            Parametersf
             ----------
                 cli: `str`
                   Full command to be executed on the device
@@ -179,7 +179,7 @@ class FileUtils(FileUtilsBase):
         parsed_url = urlparse(url)
         return parsed_url
 
-    def get_server(self, source, destination):
+    def get_server(self, source, destination=None):
         """ Get the server address from the provided URLs
 
             Parameters
@@ -213,8 +213,12 @@ class FileUtils(FileUtilsBase):
         """
         used_server = None
 
+        if destination:
+            new_list = [source, destination]
+        else:
+            new_list = [source]
+
         # Extract the server address to be used later for authentication
-        new_list = [source, destination]
         for item in new_list:
             parsed = self.parse_url(item)
             # Validate parsed address is a valid IP address
