@@ -3,121 +3,175 @@
 # import python
 import os
 import unittest
+from unittest.mock import patch
 from unittest.mock import Mock
 
 # ATS
+from ats.topology import Testbed
 from ats.topology import Device
-
-# abstract
-from abstract import Lookup
+from ats.datastructures import AttrDict
 
 # filetransferutils
-import filetransferutils
-from filetransferutils.ssh import Ssh
+from ats.utils.fileutils import FileUtils
 
 
 class test_filetransferutils(unittest.TestCase):
+    # Instantiate tesbed and device objects
+    tb = Testbed(name='myTestbed')
+    device = Device(testbed=tb, name='aDevice', os='nxos')
 
-	# Define device under testing
-	device = Device(name='aDevice', os='nxos')
+    # Instantiate a filetransferutils instance for NXOS device
+    fu_device = FileUtils.from_device(device)
 
-	# Establish server connection
-	scp = Ssh(ip='10.1.7.250')
-	scp.setup_scp()
+    # Add testbed servers for authentication
+    device.testbed.servers = AttrDict(
+        server_name = dict(
+            username="myuser", password="mypw", address='1.1.1.1'),
+    )
 
-	# Mock device output
-	raw1 = {'execute.return_value': '''!
-	'''}
+    dir_output = ['bootflash:/ISSUCleanGolden.system.gbin',
+        'bootflash:/ISSUCleanGolden.cfg', 'bootflash:/platform-sdk.cmd',
+        'bootflash:/virt_strg_pool_bf_vdc_1/', 'bootflash:/virtual-instance/',
+        'bootflash:/virtual-instance.conf', 'bootflash:/.rpmstore/',
+        'bootflash:/.swtam/', 'bootflash:/scripts/']
 
-	raw2 = {'execute.return_value': '''\
-		Accessing tftp://10.1.7.250//auto/tftp-ssr/new_file-2018-01-10-10_21_47...
-		Loading /auto/tftp-ssr/new_file-2018-01-10-10_21_47 from 10.1.7.250 (via GigabitEthernet0): !
-		[OK - 0 bytes]
+    # Mock device output
+    raw1 = {'execute.return_value': '''
+        copy bootflash:/virtual-instance.conf ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management
+        Enter username: rcpuser
+        Password: 
+        ***** Transfer of file Completed Successfully *****
+        Copy complete.
+    '''}
 
-		0 bytes copied in 0.011 secs (0 bytes/sec)
-	'''}
+    raw2 = '''
+        dir
+               4096    Jan 25 21:00:53 2017  .rpmstore/
+               4096    Jan 25 21:01:08 2017  .swtam/
+                390    Jan 25 21:36:20 2017  ISSUCleanGolden.cfg
+          752699904    Jan 25 21:36:26 2017  ISSUCleanGolden.system.gbin
+                  0    Jan 25 21:35:55 2017  platform-sdk.cmd
+               4096    Jan 25 21:01:57 2017  scripts/
+               4096    Jan 25 21:02:02 2017  virt_strg_pool_bf_vdc_1/
+               4096    Jan 25 21:01:21 2017  virtual-instance/
+                 59    Jan 25 21:01:11 2017  virtual-instance.conf
 
-	outputs = {}
-	outputs['show version > tftp://10.1.7.250//auto/tftp-ssr/test_file_name.py vrf management'] = raw1
-	outputs['copy crashinfo:/corefile.core.gz tftp://10.1.7.250//auto/tftp-ssr/corefile.core.gz'] = raw1
-	outputs['show clock > tftp://10.1.7.250//auto/tftp-ssr/aDevice vrf management'] = raw1
-	outputs['copy tftp://10.1.7.250//auto/tftp-ssr/new_file-2018-01-10-10_24_58 running-config vrf management'] = raw2
+        Usage for bootflash://
+         1150812160 bytes used
+         2386407424 bytes free
+         3537219584 bytes total
+    '''
 
-	def mapper(self, key, timeout=None, reply= None):
-		return self.outputs[key]
+    raw3 = {'execute.return_value': '''
+        delete bootflash:new_file.tcl
+        Do you want to delete "/new_file.tcl" ? (yes/no/abort)   [y] 
+    '''}
 
-	# Get the corresponding filetransferutils Utils implementation
-	tftpcls = Lookup(device.os).filetransferutils.tftp.utils.Utils(
-		scp, '/auto/tftp-ssr/')
+    raw4 = {'execute.return_value': '''
+        move bootflash:mem_leak.tcl new_file.tcl
+    '''}
 
-	def test_copy_device_output_to_server(self):
+    raw5 = {'execute.return_value': '''
+        show clock > ftp://10.1.7.250//auto/tftp-ssr/show_clock vrf management
+        Enter username: rcpuser
+        Password: 
+        ***** Transfer of file Completed Successfully *****
+    '''}
 
-		self.device.execute = Mock()
-		self.device.execute.side_effect = self.mapper
+    raw6 = {'futlinux.check_file.return_value': '',
+        'futlinux.deletefile.return_value': ''}
 
-		# Create file on the server
-		f = open(os.path.join('/auto/tftp-ssr/', 'test_file_name.py'), 'w')
+    raw7 = {'execute.return_value': '''
+        copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management
+        Trying to connect to tftp server......
+        Connection to Server Established.
+        [                         ]         0.50KB[#                        ]         4.50KB[##                       ]         8.50KB[###                      ]        12.50KB                                                                                    TFTP put operation was successful
+        Copy complete, now saving to disk (please wait)...
+        Copy complete.
+    '''}
 
-		self.tftpcls.copy_CLI_output(device=self.device, filename='test_file_name.py',
-			cli='show version')
+    outputs = {}
+    outputs['copy bootflash:/virtual-instance.conf '
+        'ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management']\
+         = raw1
+    outputs['dir'] = raw2
+    outputs['delete bootflash:new_file.tcl'] = raw3
+    outputs['move bootflash:mem_leak.tcl new_file.tcl'] = raw4
+    outputs['show clock > ftp://1.1.1.1//auto/tftp-ssr/show_clock vrf management'] = raw5
+    outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management'] = raw7
 
-		# Delete the temp file created
-		os.remove('/auto/tftp-ssr/test_file_name.py')
+    def mapper(self, key, timeout=None, reply= None):
+        return self.outputs[key]
 
-	def test_copy_core(self):
+    def test_copyfile(self):
 
-		self.device.execute = Mock()
-		self.device.execute.side_effect = self.mapper
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
 
-		# Create core on the server
-		f = open(os.path.join('/auto/tftp-ssr/', 'corefile.core.gz'), 'w')
+        # Call copyfiles
+        self.fu_device.copyfile(source='bootflash:/virtual-instance.conf',
+            destination='ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf',
+            timeout_seconds='300', device=self.device)
 
-		self.tftpcls.copy_core(device=self.device,
-			location='crashinfo:',
-			core='corefile.core.gz',
-			server='',
-			destination='corefile.core.gz')
+    def test_dir(self):
 
-		# Delete the temp file created
-		os.remove('/auto/tftp-ssr/corefile.core.gz')
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
 
-	def test_validate_server(self):
+        directory_output = self.fu_device.dir(target='bootflash:',
+            timeout_seconds=300, device=self.device)
 
-		self.device.execute = Mock()
-		self.device.execute.side_effect = self.mapper
+        self.assertEqual(sorted(directory_output), sorted(self.dir_output))
 
-		# Create core on the server
-		f = open(os.path.join('/auto/tftp-ssr/', 'aDevice'), 'w')
+    def test_stat(self):
 
-		self.tftpcls.validate_server(device=self.device, filename=self.device.name)
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
 
-		# validate_server method already deletes the temp created file
+        file_details = self.fu_device.stat(
+            target='bootflash:virtual-instance.conf',
+            timeout_seconds=300, device=self.device)
 
-	def test_copy_file_to_device(self):
+        self.assertEqual(file_details['time'], '21:01:11')
+        self.assertEqual(file_details['date'], 'Jan 25 2017')
+        self.assertEqual(file_details['size'], '59')
 
-		self.device.execute = Mock()
-		self.device.execute.side_effect = self.mapper
+    def test_deletefile(self):
 
-		# Create a temporary filename to be used later in the code
-		# Needed for later check with the above defined sideeffect
-		temp_filename = '/auto/tftp-ssr/new_file-2018-01-10-10_24_58'
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
 
-		# Create core on the server
-		f = open(os.path.join('/auto/tftp-ssr/', 'new_file'), 'w')
+        self.fu_device.deletefile(target='bootflash:new_file.tcl',
+          timeout_seconds=300, device=self.device)
 
-		try:
-			self.tftpcls.copy_file_to_device(device=self.device,
-				filename='/auto/tftp-ssr/new_file', location='running-config',
-				invalid=None, temp_filename=temp_filename)
-		except Exception as e:
-			# Handling the case of running unittest as unittest discovery under the package
-			if e.args[0] == "Issue scp'ing '/auto/tftp-ssr/new_file' to '10.1.7.250'":
-				pass
-			else:
-				raise Exception("{d}".format(d=e.args[0]))
+    def test_renamefile(self):
 
-		# Delete the temp file created
-		os.remove('/auto/tftp-ssr/new_file')
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        self.fu_device.renamefile(source='bootflash:mem_leak.tcl',
+          destination='new_file.tcl',
+          timeout_seconds=300, device=self.device)
+
+    @patch('filetransferutils.plugins.fileutils.FileUtils.validateserver',
+        return_value=raw6)
+    def test_validateserver(self, raw6):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        self.fu_device.validateserver(
+            target='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
+            timeout_seconds=300, device=self.device)
+
+    def test_copyconfiguration(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        self.fu_device.copyconfiguration(source='running-config',
+          destination='tftp://10.1.7.250//auto/tftp-ssr/test_config.py',
+          timeout_seconds=300, device=self.device)
 
 
 if __name__ == '__main__':

@@ -3,129 +3,182 @@
 # import python
 import os
 import unittest
+from unittest.mock import patch
 from unittest.mock import Mock
 
 # ATS
+from ats.topology import Testbed
 from ats.topology import Device
-
-# abstract
-from abstract import Lookup
+from ats.datastructures import AttrDict
 
 # filetransferutils
-import filetransferutils
-from filetransferutils.ssh import Ssh
+from ats.utils.fileutils import FileUtils
 
 
 class test_filetransferutils(unittest.TestCase):
-	device = Device(name='aDevice', os='iosxr')
+    # Instantiate tesbed and device objects
+    tb = Testbed(name='myTestbed')
+    device = Device(testbed=tb, name='aDevice', os='iosxr')
 
-	# Establish server connection
-	scp = Ssh(ip='10.1.7.250')
-	scp.setup_scp()
+    # Instantiate a filetransferutils instance for IOSXE device
+    fu_device = FileUtils.from_device(device)
 
-	# Mock device output
-	raw1 = {'execute.return_value': '''
-		[OK]
-	'''}
+    # Add testbed servers for authentication
+    device.testbed.servers = AttrDict(
+        server_name = dict(
+            username="myuser", password="mypw", address='1.1.1.1'),
+    )
 
-	# Mock device output
-	raw2 = {'execute.return_value': '''
-		Destination filename [/auto/tftp-ssr/corefile.core.gz]?
-		Writing tftp://10.1.7.250/auto/tftp-ssr/corefile.core.gz
-		CCCC
-		3626697 bytes copied in      3 sec (  1041854)bytes/sec
-	'''}
+    dir_output = ['disk0:/status_file', 'disk0:/clihistory', 'disk0:/cvac',
+        'disk0:/core', 'disk0:/envoke_log', 'disk0:/lost+found',
+        'disk0:/pnet_cfg.log', 'disk0:/oor_aware_process',
+        'disk0:/.python-history', 'disk0:/cvac.log', 'disk0:/nvgen_traces',
+        'disk0:/fake_config_2.tcl', 'disk0:/ztp',
+        'disk0:/config -> /misc/config', 'disk0:/memleak.tcl']
 
-	raw3 = '''\
-		% Please answer 'yes' or 'no'.
-		Would you like to proceed in configuration mode? [no]: yes
-		RP/0/RSP1/CPU0:PE1(config)#load tftp://10.1.7.250//auto/tftp-ssr/new_file-2018$
-		Loading.
-		0 bytes parsed in 1 sec (0)bytes/sec
-	'''
 
-	outputs = {}
-	outputs['show version brief | file tftp://10.1.7.250//auto/tftp-ssr/test_file_name.py'] = raw1
-	outputs['copy crashinfo:/corefile.core.gz tftp://10.1.7.250//auto/tftp-ssr/corefile.core.gz'] = raw2
-	outputs['show clock | file tftp://10.1.7.250//auto/tftp-ssr/aDevice'] = raw1
-	outputs['load tftp://10.1.7.250//auto/tftp-ssr/new_file-2018-01-10-10_24_58'] = raw3
+    # Mock device output
+    raw1 = {'execute.return_value': '''
+        copy disk0:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl
+        Address or name of remote host [1.1.1.1]? 
+        Destination filename [/auto/tftp-ssr/memleak.tcl]? 
+        !!
+        104260 bytes copied in 0.396 secs (263283 bytes/sec)
+    '''}
 
-	def mapper(self, key, timeout=None, reply= None):
-		return self.outputs[key]
+    raw2 = '''
+        dir
 
-	# Get the corresponding filetransferutils Utils implementation
-	tftpcls = Lookup(device.os).filetransferutils.tftp.utils.Utils(
-		scp, '/auto/tftp-ssr/')
+        Directory of /misc/scratch
+           32 -rw-rw-rw- 1   824 Mar  7 06:29 cvac.log
+           43 -rwxr--r-- 1     0 Mar 22 08:58 fake_config_2.tcl
+           41 -rw-r--r-- 1  1985 Mar 12 14:35 status_file
+           13 -rw-r--r-- 1  1438 Mar  7 14:26 envoke_log
+           16 -rw-r--r-- 1    98 Mar  7 06:34 oor_aware_process
+         8178 drwxr-xr-x 2  4096 Mar  7 14:27 memleak.tcl
+         8177 drwx---r-x 2  4096 Mar  7 14:27 clihistory
+           15 lrwxrwxrwx 1    12 Mar  7 14:26 config -> /misc/config
+           12 drwxr-xr-x 2  4096 Mar  7 14:26 core
+           14 -rw-r--r-- 1 10429 Mar  7 14:26 pnet_cfg.log
+           11 drwx------ 2 16384 Mar  7 14:26 lost+found
+         8179 drwxr-xr-x 8  4096 Mar  7 07:01 ztp
+           42 -rw------- 1     0 Mar 20 11:08 .python-history
+        16354 drwxr-xr-x 2  4096 Mar  7 07:22 nvgen_traces
+        16353 drwxrwxrwx 3  4096 Mar  7 14:29 cvac
 
-	def test_copy_device_output_to_server(self):
+        1012660 kbytes total (938376 kbytes free)
+    '''
 
-		self.device.execute = Mock()
-		self.device.execute.side_effect = self.mapper
+    raw3 = {'execute.return_value': '''
+        delete disk0:fake_config_2.tcl
+        Delete disk0:fake_config_2.tcl[confirm]
+    '''}
 
-		# Create file on the server
-		f = open(os.path.join('/auto/tftp-ssr/', 'test_file_name.py'), 'w')
+    raw4 = {'execute.return_value': '''
+        show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock
+        Writing /auto/tftp-ssr/show_clock 
+    '''}
 
-		self.tftpcls.copy_CLI_output(device=self.device, filename='test_file_name.py',
-			cli='show version brief')
+    raw5 = {'futlinux.check_file.return_value': '',
+        'futlinux.deletefile.return_value': ''}
 
-		# Delete the temp file created
-		os.remove('/auto/tftp-ssr/test_file_name.py')
+    raw6 = {'execute.return_value':'''
+        copy running-config ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl
+        Host name or IP address (control-c to abort): [10.1.6.242;default]?
+        Destination username: []?rcpuser
+        Destination password: 
+        Destination file name (control-c to abort): [/auto/tftp-ssr/fake_config_2.tcl]?
+        Building configuration.
+        349 lines built in 1 second
+        [OK]
+    '''}
 
-	def test_copy_core(self):
+    outputs = {}
+    outputs['copy disk0:/fake_config_2.tcl '
+        'ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl'] = raw1
+    outputs['dir'] = raw2
+    outputs['delete disk0:fake_config.tcl'] = raw3
+    outputs['show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock'] = \
+        raw4
+    outputs['copy running-config ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl'] = \
+        raw6
 
-		self.device.execute = Mock()
-		self.device.execute.side_effect = self.mapper
+    def mapper(self, key, timeout=None, reply= None):
+        return self.outputs[key]
 
-		# Create core on the server
-		f = open(os.path.join('/auto/tftp-ssr/', 'corefile.core.gz'), 'w')
+    def test_copyfile(self):
 
-		self.tftpcls.copy_core(device=self.device,
-			location='crashinfo:',
-			core='corefile.core.gz',
-			server='',
-			destination='')
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
 
-		# Delete the temp file created
-		os.remove('/auto/tftp-ssr/corefile.core.gz')
+        # Call copyfiles
+        self.fu_device.copyfile(source='disk0:/fake_config_2.tcl',
+            destination='ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl',
+            timeout_seconds='300', device=self.device)
 
-	def test_validate_server(self):
+    def test_dir(self):
 
-		self.device.execute = Mock()
-		self.device.execute.side_effect = self.mapper
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
 
-		# Create core on the server
-		f = open(os.path.join('/auto/tftp-ssr/', 'aDevice'), 'w')
+        directory_output = self.fu_device.dir(target='disk0:',
+            timeout_seconds=300, device=self.device)
 
-		self.tftpcls.validate_server(device=self.device, vrf=None,
-			filename=self.device.name)
+        self.assertEqual(sorted(directory_output), sorted(self.dir_output))
 
-		# validate_server method already deletes the temp created file
+    def test_stat(self):
 
-	def test_copy_file_to_device(self):
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
 
-		self.device.configure = Mock()
-		self.device.configure.side_effect = self.mapper
+        file_details = self.fu_device.stat(target='disk0:memleak.tcl',
+          timeout_seconds=300, device=self.device)
 
-		# Create a temporary filename to be used later in the code
-		# Needed fo rlater check with the above defined sideeffect
-		temp_filename = '/auto/tftp-ssr/new_file-2018-01-10-10_24_58'
+        self.assertEqual(file_details['index'],
+          '8178')
+        self.assertEqual(file_details['date'], 'Mar 7 14:27')
+        self.assertEqual(file_details['permission'], 'drwxr-xr-x')
+        self.assertEqual(file_details['size'], '4096')
 
-		# Create core on the server
-		f = open(os.path.join('/auto/tftp-ssr/', 'new_file'), 'w')
+    def test_deletefile(self):
 
-		try:
-			self.tftpcls.copy_file_to_device(device=self.device,
-				filename='/auto/tftp-ssr/new_file', location='running-config',
-				invalid=None, temp_filename=temp_filename)
-		except Exception as e:
-			# Handling the case of running unittest as unittest discovery under the package
-			if e.args[0] == "Issue scp'ing '/auto/tftp-ssr/new_file' to '10.1.7.250'":
-				pass
-			else:
-				raise Exception("{d}".format(d=e.args[0]))
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
 
-		# Delete the temp file created
-		os.remove('/auto/tftp-ssr/new_file')
+        self.fu_device.deletefile(target='disk0:fake_config.tcl',
+          timeout_seconds=300, device=self.device)
+
+    def test_renamefile(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        with self.assertRaisesRegex(
+            NotImplementedError, "The fileutils module filetransferutils."
+            "plugins.iosxr.fileutils does not implement renamefile."):
+            self.fu_device.renamefile(source='disk0:fake_config.tcl',
+              destination='memleak.tcl',
+                timeout_seconds=300, device=self.device)
+
+    @patch('filetransferutils.plugins.fileutils.FileUtils.validateserver',
+        return_value=raw5)
+    def test_validateserver(self, raw5):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        self.fu_device.validateserver(
+            target='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
+            timeout_seconds=300, device=self.device)
+
+    def test_copyconfiguration(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        self.fu_device.copyconfiguration(source='running-config',
+          destination='ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl',
+          timeout_seconds=300, device=self.device)
 
 
 if __name__ == '__main__':

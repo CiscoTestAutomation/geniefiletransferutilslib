@@ -1,9 +1,13 @@
 Introduction
 ============
- 
-The ``FileTransferUtils`` package provides various APIs for supporting file transfer (image, core, etc.) using different protocols such as tftp, ftp, etc.
+
+The ``FileTransferUtils`` package is a plugin derived implementation of the Multiprotocol_File_Transfer_Utilities_ core utilities.
+
+The package provides various device agnostic APIs for supporting file transfer
+(image, core, etc.) operation using different protocols such as tftp, ftp, etc.
 
 .. _package_installation:
+
 
 Installation
 ============
@@ -28,77 +32,132 @@ Once installed the ``FileTransferUtils`` package can be imported using `import`
 
 
 Support 
-========
+=======
 
 pyATS Support Team is happy to help you with any question/enquiry through PieStack_ under the category of Cisco Shared Packages/FileTransferUtils. 
 
 .. _PieStack: http://piestack.cisco.com
 
 
-
 Example 
-========
+=======
 
-Setup the connection to remote server (in this case through SSH), instanciate the file transfer protocol object (in this example TFTP protocol). 
+Import the ``FileUtils`` core utilities package then instanciate the file utils
+device implementation corresponding to the device OS as illustrated below. 
 
 .. code-block:: python
 
+    # Import FileUtils core utilities
+    from ats.utils.fileutils import FileUtils
 
-    # Import FileTransferUtils pkg
-    import filetransferutils
-
-    # Import Secure Shell 
-    from filetransferutils.ssh import Ssh
-
-    # Import Lookup from Abstract_ pkg
-    from abstract import Lookup
-
-    # setup the secure shell connection with the remove server 
-    scp = Ssh(ip=server)
-    scp.setup_scp()
-
-    # Create an instance file transfer protocol object; in this case the TFTP 
-    tftpobj = Lookup.from_device(device).filetransferutils.tftp.utils.Utils(
-        scp, kwargs['destination'])
+    # Instanciate a filetransferutils instance for the device corresponding
+    # to the device specific OS
+    fu_device = FileUtils.from_device(device)
 
 .. note::
 
-    Check documentation for more information about Abstract_ package.
+    Check documentation for more information about Multiprotocol_File_Transfer_Utilities_ package.
 
 Now the API can be called for various operations such as: 
 
-* Copying file to device
+* Copy file to/from device
 
     .. code-block:: python
 
-        tftpobj.copy_file_to_device(device = '<device object>',
-                                    filename = 'file full path',
-                                    location = 'running-config')
+        fu_device.copyfile(source='URL to copy from',
+                           destination='URL to copy to',
+                           timeout_seconds='timeout in seconds',
+                           device='<device object>')
 
-* Copying output of a CLI Command
+        Example:
+        -------
+        fu_device.copyfile(source='flash:/memleak.tcl',
+            destination='ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl',
+            timeout_seconds=300, device=self.device)
 
-
-
-    .. code-block:: python
-        
-        # Save a cli output to a file, which is then copied to server
-        tftpobj.copy_CLI_output (device='<device object>', filename='file name on the server',
-                                 cli='cli to be executed on device')
-
-* Copying core files
+* List all the files/folders under the specified directory
 
     .. code-block:: python
 
-        tftpobj.copy_core(device='<device object>', location='core location on device',
-                              core='core file name', vrf='vrf name (if needed)',
-                              timeout='timeout for the core copy', username='username (if needed, ex: ftp)',
-                              password='password (if needed, ex: ftp)')
+        directory_output = fu_device.dir(target='directory name',
+                                         timeout_seconds='timeout in seconds',
+                                         device='<device object>')
 
-* Validating the server 
+        Example:
+        -------
+        directory_output = fu_device.dir(target='flash:',
+            timeout_seconds=300, device=self.device)
+
+* Retrieve file details on a device directory
 
     .. code-block:: python
 
-        tftpobj.validate_server(device='<device object>', vrf='vrf name (if needed)')
+        file_details = fu_device.stat(target='file URL path',
+                                      timeout_seconds='timeout in seconds',
+                                      device='<device object>')
 
+        Example:
+        -------
+        # Call the stat function
+        file_details = fu_device.stat(target='flash:/memleak.tcl',
+            timeout_seconds=300, device=self.device)
+
+        # Retrieve the file details
+        self.assertEqual(file_details['last_modified_date'],
+            'Mar 20 2018 10:26:01 +00:00')
+        self.assertEqual(file_details['permissions'], '-rw-')
+        self.assertEqual(file_details['index'], '69705')
+        self.assertEqual(file_details['size'], '104260')
+
+
+* Delete file from device directory
+
+    .. code-block:: python
+
+        fu_device.deletefile(target='file URL path',
+                             timeout_seconds='timeout in seconds',
+                             device='<device object>')
+
+        Example:
+        -------
+        # Call the deletefile function
+        fu_device.deletefile(target='flash:/memleak.tcl',
+            timeout_seconds=300, device=self.device)
+
+* Rename file on device directory
+
+    .. code-block:: python
+
+        fu_device.renamefile(source='file URL path',
+                             destination='file new name',
+                             timeout_seconds='timeout in seconds',
+                             device='<device object>')
+
+        Example:
+        -------
+        # Call the renamefile function
+        fu_device.renamefile(source='flash:/memleak.tcl',
+            destination='new_file.tcl',
+            timeout_seconds=300, device=self.device)
+
+* Validate connectivity to remote server
+
+    * Method will copy the output of 'show clock' command to a remote server to ensure
+    sane connectivity to the server and then deletes the temporary created file.
+
+    .. code-block:: python
+
+        fu_device.validateserver(target='file URL path on the remote server',
+                                 timeout_seconds='timeout in seconds',
+                                 device='<device object>')
+
+        Example:
+        -------
+        # Call the validateserver function
+        fu_device.validateserver(
+            target='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
+            timeout_seconds=300, device=self.device)
+
+
+.. _Multiprotocol_File_Transfer_Utilities: http://wwwin-pyats.cisco.com/documentation/html/utilities/file_transfer_utilities.html
 .. _documentation: http://wwwin-pyats.cisco.com/documentation/html/install/install.html
-.. _Abstract: http://http://wwwin-pyats.cisco.com/cisco-shared/abstract/html/

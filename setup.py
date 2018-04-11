@@ -16,6 +16,8 @@ import subprocess
 from setuptools import setup, find_packages, Command
 from setuptools.command.test import test
 
+from ats.utils.fileutils import ENTRYPOINT_GROUP
+
 pkg_name = 'filetransferutils'
 
 class CleanCommand(Command):
@@ -80,7 +82,7 @@ class BuildAndPreviewDocsCommand(Command):
 
     def run(self):
         user = os.environ['USER']
-        sphinx_build_cmd = "sphinx-build -b html -c ../docs " \
+        sphinx_build_cmd = "sphinx-build -b html -c ./docs " \
             "-d ./__build__/documentation/doctrees docs/ ./__build__/documentation/html"
         target_dir = "/users/{user}/WWW/cisco_shared/{pkg_name}".\
             format(user = user, pkg_name = pkg_name)
@@ -177,10 +179,15 @@ setup(
 
     # console entry point
     entry_points = {
+        ENTRYPOINT_GROUP : [
+            'iosxe = filetransferutils.plugins.iosxe',
+            'nxos = filetransferutils.plugins.nxos',
+            'iosxr = filetransferutils.plugins.iosxr',
+        ],
     },
 
     # package dependencies
-    install_requires =  ['abstract','scp'],
+    install_requires =  ['ats.utils >= 4.1.0'],
 
     # any additional groups of dependencies.
     # install using: $ pip install -e .[dev]
@@ -204,7 +211,7 @@ setup(
     cmdclass = {
         'clean': CleanCommand,
         'test': TestCommand,
-        'preview_docs': BuildAndPreviewDocsCommand,
+        'docs': BuildAndPreviewDocsCommand,
     },
 
     # non zip-safe (never tested it)

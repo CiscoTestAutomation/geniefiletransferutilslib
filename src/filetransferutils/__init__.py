@@ -1,6 +1,3 @@
-# Enable abstraction; This is the root package.
-__import__('abstract').declare_package(__name__)
-
 '''
 Module:
     filetransferutils
@@ -19,3 +16,5 @@ __author__ = """Jean-Benoit Aubin (jeaubin@cisco.com)
 __date__ = "January 2018"
 __contact__ = 'asg-genie-support@cisco.com'
 __copyright__ = 'Cisco Systems, Inc. Cisco Confidential'
+
+from .fileutils import FileUtils
