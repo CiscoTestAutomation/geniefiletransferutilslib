@@ -444,7 +444,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
                 # copy file from server to device running configuration
                 >>> fu_device.copyconfiguration(
-                ...     source='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
+                ...     source='ftp://10.1.0.213//auto/tftp-ssr/config.py',
                 ...     destination='running-config',
                 ...     timeout_seconds='300', device=device)
 

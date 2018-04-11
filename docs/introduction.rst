@@ -158,6 +158,29 @@ Now the API can be called for various operations such as:
             target='ftp://1.1.1.1//auto/tftp-ssr/show_clock',
             timeout_seconds=300, device=self.device)
 
+* Copy configuration to/from device
+
+    .. code-block:: python
+
+        # copy file from server to device running configuration
+        fu_device.copyconfiguration(source='file URL path',
+                             destination='running-config',
+                             timeout_seconds='timeout in seconds',
+                             device='<device object>')
+
+        # copy device running configuration to startup-configuration
+        fu_device.copyconfiguration(source='running-config',
+                             destination='startup-config',
+                             timeout_seconds='timeout in seconds',
+                             device='<device object>')
+
+        Example:
+        -------
+        # copy file from server to device running configuration
+        fu_device.copyconfiguration(
+            source='ftp://1.1.1.1//auto/tftp-ssr/config.py',
+            destination='running-config',
+            timeout_seconds='300', device=device)
 
 .. _Multiprotocol_File_Transfer_Utilities: http://wwwin-pyats.cisco.com/documentation/html/utilities/file_transfer_utilities.html
 .. _documentation: http://wwwin-pyats.cisco.com/documentation/html/install/install.html
