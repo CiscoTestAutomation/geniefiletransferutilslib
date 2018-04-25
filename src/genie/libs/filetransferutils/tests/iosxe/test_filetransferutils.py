@@ -171,7 +171,7 @@ class test_filetransferutils(unittest.TestCase):
           destination='new_file.tcl',
           timeout_seconds=300, device=self.device)
 
-    @patch('filetransferutils.plugins.fileutils.FileUtils.validateserver',
+    @patch('genie.libs.filetransferutils.plugins.fileutils.FileUtils.validateserver',
         return_value=raw6)
     def test_validateserver(self, raw6):
 

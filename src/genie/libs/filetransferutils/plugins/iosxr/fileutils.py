@@ -1,4 +1,4 @@
-""" File utils base class for NXOS devices. """
+""" File utils base class for IOSXR devices. """
 
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
@@ -8,20 +8,17 @@ from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
 
 # Dir parser
 try:
-    from parser.nxos.show_platform import Dir
+    from genie.libs.parser.iosxr.show_platform import Dir
 except ImportError:
-    try:
-        from genie_parser.nxos.show_platform import Dir
-    except ImportError:
-        # For apidoc building only
-        from unittest.mock import Mock; Dir=Mock()
+    # For apidoc building only
+    from unittest.mock import Mock; Dir=Mock()
 
 
 class FileUtils(FileUtilsDeviceBase):
 
     def copyfile(self, source, destination, timeout_seconds=300,
-        vrf='management', *args, **kwargs):
-        """ Copy a file to/from NXOS device
+        vrf=None, *args, **kwargs):
+        """ Copy a file to/from IOSXR device
 
             Copy any file to/from a device to any location supported on the
             device and on the running-configuration.
@@ -52,8 +49,7 @@ class FileUtils(FileUtilsDeviceBase):
                 # FileUtils
                 >>> from ats.utils.fileutils import FileUtils
 
-                # Instantiate a filetransferutils instance for NXOS device
-                >>> from ats.utils.fileutils import FileUtils
+                # Instanciate a filetransferutils instance for IOSXR device
                 >>> fu_device = FileUtils.from_device(device)
 
                 # copy file from device to server
@@ -68,12 +64,17 @@ class FileUtils(FileUtilsDeviceBase):
                 ...     destination='flash:/new_file.tcl',
                 ...     timeout_seconds='300', device=device)
 
+                # copy file from server to device running configuration
+                >>> fu_device.copyfile(
+                ...     source='ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl',
+                ...     destination='running-config',
+                ...     timeout_seconds='300', device=device)
         """
-
-        # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management
         if vrf:
-            cmd = 'copy {f} {t} vrf {vrf}'.format(f=source, t=destination,
-                vrf=vrf)
+            cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
+                t=destination, vrf_value=vrf)
+        else:
+            cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)
@@ -113,21 +114,21 @@ class FileUtils(FileUtilsDeviceBase):
                 # FileUtils
                 >>> from ats.utils.fileutils import FileUtils
 
-                # Instanciate a filetransferutils instance for NXOS device
+                # Instanciate a filetransferutils instance for IOSXR device
                 >>> fu_device = FileUtils.from_device(device)
 
-                # list all files on the device directory 'bootflash:'
-                >>> directory_output = fu_device.dir(target='bootflash:',
+                # list all files on the device directory 'disk0:'
+                >>> directory_output = fu_device.dir(target='disk0:',
                 ...     timeout_seconds=300, device=device)
 
                 >>> directory_output
 
-                ['bootflash:/virt_strg_pool_bf_vdc_1/',
-                 'bootflash:/platform-sdk.cmd', 'bootflash:/.swtam/',
-                 'bootflash:/virtual-instance/', 'bootflash:/nxos.7.0.3.I7.1.bin',
-                 'bootflash:/virtual-instance.conf', 'bootflash:/scripts/',
-                 'bootflash:/memleak.tcl', 'bootflash:/acfg_base_running_cfg_vdc1',
-                 'bootflash:/.rpmstore/']
+                ['disk0:/lost+found', 'disk0:/ztp', 'disk0:/core',
+                 'disk0:/envoke_log', 'disk0:/cvac', 'disk0:/cvac.log',
+                 'disk0:/clihistory', 'disk0:/config -> /misc/config',
+                 'disk0:/status_file', 'disk0:/kim', 'disk0:/pnet_cfg.log',
+                 'disk0:/nvgen_traces', 'disk0:/oor_aware_process',
+                 'disk0:/.python-history']
 
         """
 
@@ -143,7 +144,7 @@ class FileUtils(FileUtilsDeviceBase):
         # Create a new list to return
         new_list = []
 
-        for key in dir_output['files']:
+        for key in dir_output['dir']['files']:
             new_list.append(directory+key)
 
         return new_list
@@ -177,7 +178,7 @@ class FileUtils(FileUtilsDeviceBase):
                 # FileUtils
                 >>> from ats.utils.fileutils import FileUtils
 
-                # Instanciate a filetransferutils instance for NXOS device
+                # Instanciate a filetransferutils instance for IOSXR device
                 >>> fu_device = FileUtils.from_device(device)
 
                 # list the file details on the device 'flash:' directory
@@ -188,16 +189,18 @@ class FileUtils(FileUtilsDeviceBase):
                 >>> directory_output['permissions']
 
                 (Pdb) directory_output
-                {'last_modified_date': 'Mar 20 2018 10:26:01 +00:00',
-                 'size': '104260', 'permissions': '-rw-', 'index': '69705'}
+                {'index': '14', 'date': 'Mar 28 12:23',
+                 'permission': '-rw-r--r--', 'size': '10429'}
 
         """
 
-        files = super().stat(target, timeout_seconds, Dir, *args, **kwargs)
+        files = super().stat(target, timeout_seconds, Dir, *args,
+            **kwargs)
 
         # Extract the file name requested
         output = self.parse_url(target)
-        file_details = files['files'][output.path]
+        directory = output.scheme + ":/"
+        file_details = files['dir']['files'][output.path]
 
         return file_details
 
@@ -227,12 +230,12 @@ class FileUtils(FileUtilsDeviceBase):
                 # FileUtils
                 >>> from ats.utils.fileutils import FileUtils
 
-                # Instanciate a filetransferutils instance for NXOS device
+                # Instanciate a filetransferutils instance for IOSXR device
                 >>> fu_device = FileUtils.from_device(device)
 
-                # delete a specific file on device directory 'flash:'
+                # delete a specific file on device directory 'disk0:'
                 >>> directory_output = fu_device.deletefile(
-                ...     target='flash:memleak_bckp.tcl',
+                ...     target='disk0:memleak_bckp.tcl',
                 ...     timeout_seconds=300, device=device)
 
         """
@@ -269,20 +272,18 @@ class FileUtils(FileUtilsDeviceBase):
                 # FileUtils
                 >>> from ats.utils.fileutils import FileUtils
 
-                # Instanciate a filetransferutils instance for NXOS device
+                # Instanciate a filetransferutils instance for IOSXR device
                 >>> fu_device = FileUtils.from_device(device)
 
-                # rename the file on the device 'bootflash:' directory
-                >>> fu_device.renamefile(target='bootflash:memleak.tcl',
+                # rename the file on the device 'flash:' directory
+                >>> fu_device.renamefile(target='flash:memleak.tcl',
                 ...     destination='memleak_backup.tcl'
                 ...     timeout_seconds=300, device=device)
 
         """
-        # move bootflash:memleak.tcl memleak_j.tcl
-        cmd = 'move {f} {u}'.format(f=source, u=destination)
 
-        super().renamefile(source, destination, timeout_seconds, cmd, 
-            *args, **kwargs)
+        raise NotImplementedError("The fileutils module {} "
+            "does not implement renamefile.".format(self.__module__))
 
     def chmod(self, target, mode, timeout_seconds=300, *args, **kwargs):
         """ Change file permissions
@@ -307,8 +308,7 @@ class FileUtils(FileUtilsDeviceBase):
         raise NotImplementedError("The fileutils module {} "
             "does not implement chmod.".format(self.__module__))
 
-    def validateserver(self, target, timeout_seconds=300,
-        vrf='management', *args, **kwargs):
+    def validateserver(self, target, timeout_seconds=300, *args, **kwargs):
         ''' Make sure that the given server information is valid
 
             Function that verifies if the server information given is valid, and if
@@ -320,10 +320,8 @@ class FileUtils(FileUtilsDeviceBase):
             ----------
                 target (`str`):  File path including the protocol,
                     server and file location.
-                timeout_seconds (`str`):
+                timeout_seconds: `str`
                     The number of seconds to wait before aborting the operation.
-                vrf (`str`):
-                    Vrf value to be used during execution. Default is `management`
 
             Returns
             -------
@@ -344,22 +342,23 @@ class FileUtils(FileUtilsDeviceBase):
 
                 # Validate server connectivity
                 >>> fu_device.validateserver(
-                ...     target='ftp://10.1.7.250//auto/tftp-ssr/show_clock',
+                ...     target='ftp://10.1.6.242//auto/tftp-ssr/show_clock',
                 ...     timeout_seconds=300, device=device)
         '''
+
         # Extract the server address to be used later for authentication
         used_server = self.get_server(target)
 
         # Patch up the command together
-        # show clock > tftp://10.1.0.213//auto/ftp-ssr/show_clock vrf management
-        cmd = "show clock > {e} vrf {vrf}".format(e=target, vrf=vrf)
+        # show clock | file ftp://10.1.6.242//auto/tftp-ssr/show_clock
+        cmd = "show clock | file {e}".format(e=target)
 
         super().validateserver(cmd=cmd, target=target,
             timeout_seconds=timeout_seconds, used_server=used_server, *args,
             **kwargs)
 
     def copyconfiguration(self, source, destination, timeout_seconds=300,
-        vrf='management', *args, **kwargs):
+        vrf=None, *args, **kwargs):
         """ Copy configuration to/from device
 
             Copy configuration on the device or between locations supported on the
@@ -403,14 +402,14 @@ class FileUtils(FileUtilsDeviceBase):
 
                 # copy running-configuration to device memory
                 >>> fu_device.copyconfiguration(
-                ...     source='running-configuration',
+                ...     source='running-config',
                 ...     destination='bootflash:filename',
                 ...     timeout_seconds='300', device=device)
 
                 # copy startup-configuration running-configuration
                 >>> fu_device.copyconfiguration(
                 ...     source='startup-configuration',
-                ...     destination='running-configuration',
+                ...     destination='running-config',
                 ...     timeout_seconds='300', device=device)
         """
 
@@ -421,15 +420,10 @@ class FileUtils(FileUtilsDeviceBase):
             # We catch exception in the case where we copy configurations
             # between running and startup on the device
             used_server = None
-            vrf = None
 
         # Build copy command
         # Example - copy running-configuration bootflash:tempfile1
-        if vrf:
-            cmd = 'copy {f} {t} vrf {vrf}'.format(f=source, t=destination,
-                vrf=vrf)
-        else:
-            cmd = 'copy {f} {t}'.format(f=source, t=destination)     
+        cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
         super().copyconfiguration(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,

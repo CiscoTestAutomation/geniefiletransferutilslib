@@ -143,7 +143,7 @@ Now the API can be called for various operations such as:
 * Validate connectivity to remote server
 
     * Method will copy the output of 'show clock' command to a remote server to ensure
-    sane connectivity to the server and then deletes the temporary created file.
+      sane connectivity to the server and then deletes the temporary created file.
 
     .. code-block:: python
 

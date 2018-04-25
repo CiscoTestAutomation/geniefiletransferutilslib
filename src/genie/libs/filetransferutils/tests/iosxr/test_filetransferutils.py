@@ -154,13 +154,14 @@ class test_filetransferutils(unittest.TestCase):
         self.device.execute.side_effect = self.mapper
 
         with self.assertRaisesRegex(
-            NotImplementedError, "The fileutils module filetransferutils."
-            "plugins.iosxr.fileutils does not implement renamefile."):
+            NotImplementedError, "The fileutils module genie.libs."
+            "filetransferutils.plugins.iosxr.fileutils does not implement "
+            "renamefile."):
             self.fu_device.renamefile(source='disk0:fake_config.tcl',
               destination='memleak.tcl',
                 timeout_seconds=300, device=self.device)
 
-    @patch('filetransferutils.plugins.fileutils.FileUtils.validateserver',
+    @patch('genie.libs.filetransferutils.plugins.fileutils.FileUtils.validateserver',
         return_value=raw5)
     def test_validateserver(self, raw5):
 

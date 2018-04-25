@@ -29,3 +29,24 @@ How to run unit tests:
     cd filetransferutils/lib/py*/site-packages/filetransferutils/tests
     python -m unittest discover
 
+
+FileTransferUtils Library
+-------------------------
+
+FileTransferUtils file hierarchy
+--------------------------------
+geniefiletransferutilslib
+    |-- __init__.py
+    |-- fileutils.py
+    |-- plugins
+        |-- __init__.py
+        |-- fileutils.py
+        |-- iosxe
+        |   |-- __init__.py
+        |   `-- fileutils.py
+        |-- iosxr
+        |   |-- __init__.py
+        |   `-- fileutils.py
+        |-- nxos
+            |-- __init__.py
+            `-- fileutils.py

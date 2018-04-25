@@ -4,7 +4,7 @@ plugins
 module contents
 ---------------
 
-.. automodule:: filetransferutils.plugins.fileutils
+.. automodule:: genie.libs.filetransferutils.plugins.fileutils
     :members:
     :undoc-members:
     :show-inheritance:

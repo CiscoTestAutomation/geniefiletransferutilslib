@@ -22,7 +22,7 @@ class FileUtils(FileUtilsBase):
       timeout_seconds=300, **kwargs):
         """ Send command to a particular device and deal with its result
 
-            Parametersf
+            Parameters
             ----------
                 cli: `str`
                   Full command to be executed on the device

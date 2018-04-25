@@ -8,13 +8,10 @@ from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
 
 # Dir parser
 try:
-    from parser.iosxe.show_platform import Dir
+    from genie.libs.parser.iosxe.show_platform import Dir
 except ImportError:
-    try:
-        from genie_parser.iosxe.show_platform import Dir
-    except ImportError:
-        # For apidoc building only
-        from unittest.mock import Mock; Dir=Mock()
+    # For apidoc building only
+    from unittest.mock import Mock; Dir=Mock()
 
 
 class FileUtils(FileUtilsDeviceBase):

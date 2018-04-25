@@ -1,166 +1,88 @@
 #! /bin/env python
 
-"""Setup file for filetransferutils package
+'''Setup file for Libs
 
 See:
     https://packaging.python.org/en/latest/distributing.html
-"""
-
-import os
-import re
-import sys
-import shlex
-import unittest
-import subprocess
-
-from setuptools import setup, find_packages, Command
-from setuptools.command.test import test
-
+'''
 from ats.utils.fileutils import ENTRYPOINT_GROUP
 
-pkg_name = 'filetransferutils'
+from ciscodistutils import setup, find_packages, is_devnet_build
+from ciscodistutils.tools import (read,
+                                  version_info,
+                                  generate_cython_modules)
 
-class CleanCommand(Command):
-    '''Custom clean command
+_INTERNAL_SUPPORT = 'pyats-support@cisco.com'
+_EXTERNAL_SUPPORT = 'pyats-support-ext@cisco.com'
 
-    cleanup current directory:
-        - removes build/
-        - removes src/*.egg-info
-        - removes *.pyc and __pycache__ recursively
+_INTERNAL_LICENSE = 'Cisco Systems, Inc. Cisco Confidential',
+_EXTERNAL_LICENSE = 'Apache 2.0'
 
-    Example
-    -------
-        python setup.py clean
-
-    '''
-
-    user_options = []
-    description = 'CISCO SHARED : Clean all build artifacts'
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        os.system('rm -vrf ./build ./dist ./src/*.egg-info')
-        os.system('find . -type f -name "*.pyc" | xargs rm -vrf')
-        os.system('find . -type d -name "__pycache__" | xargs rm -vrf')
-
-class TestCommand(Command):
-    user_options = []
-    description = 'CISCO SHARED : Run unit tests against this package'
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        # where the tests are (relative to here)
-        tests = os.path.join('src', pkg_name, 'tests')
-
-        # call unittests
-        sys.exit(unittest.main(
-            module = None,
-           argv = ['python -m unittest', 'discover', tests],
-           failfast = True))
+_INTERNAL_URL = 'http://wwwin-genie.cisco.com/'
+_EXTERNAL_URL = 'https://developer.cisco.com/site/pyats/'
 
 
-class BuildAndPreviewDocsCommand(Command):
-    user_options = []
-    description = 'CISCO SHARED : Build and privately distribute ' \
-        'Sphinx documentation for this package'
+# pyats support mailer
+SUPPORT = _EXTERNAL_SUPPORT if is_devnet_build() else _INTERNAL_SUPPORT
 
-    def initialize_options(self):
-        pass
+# license statement
+LICENSE = _EXTERNAL_LICENSE if is_devnet_build() else _INTERNAL_LICENSE
 
-    def finalize_options(self):
-        pass
+# project url
+URL = _EXTERNAL_URL if is_devnet_build() else _INTERNAL_URL
 
-    def run(self):
-        user = os.environ['USER']
-        sphinx_build_cmd = "sphinx-build -b html -c ./docs " \
-            "-d ./__build__/documentation/doctrees docs/ ./__build__/documentation/html"
-        target_dir = "/users/{user}/WWW/cisco_shared/{pkg_name}".\
-            format(user = user, pkg_name = pkg_name)
-        mkdir_cmd = "mkdir -p {target_dir}".format(target_dir=target_dir)
-        rsync_cmd = "rsync -rvc ./__build__/documentation/ {target_dir}".\
-            format(target_dir=target_dir)
-        try:
-            ret_code = subprocess.call(shlex.split(mkdir_cmd))
-            if not ret_code:
-                ret_code = subprocess.call(shlex.split(sphinx_build_cmd))
-                if not ret_code:
-                    ret_code = subprocess.call(shlex.split(rsync_cmd))
-                    print("\nYou may preview the documentation at the following URL:")
-                    print("http://wwwin-home.cisco.com/~{user}/cisco_shared/{pkg_name}/html".\
-                        format(user=user, pkg_name=pkg_name))
-                    sys.exit(0)
-            sys.exit(1)
-        except Exception as e:
-            print("Failed to build documentation : {}".format(str(e)))
-            sys.exit(1)
+# compute version range
+version, version_range = version_info('src', 'genie', 'libs', 'filetransferutils', '__init__.py')
 
+# generate package dependencies
+install_requires = []
 
-def read(*paths):
-    '''read and return txt content of file'''
-    with open(os.path.join(os.path.dirname(__file__), *paths)) as fp:
-        return fp.read()
-
-
-def find_version(*paths):
-    '''reads a file and returns the defined __version__ value'''
-    version_match = re.search(r"^__version__ ?= ?['\"]([^'\"]*)['\"]",
-                              read(*paths), re.M)
-    if version_match:
-        return version_match.group(1)
-    raise RuntimeError("Unable to find version string.")
-
-core_ver = '3.0.0'
-version_range = '>= %s.0.0, < %s.0.0' % (core_ver[0], int(core_ver[0]) + 1)
+#install_requires.extend(['genie.{pkg} {range}'.format(pkg = pkg,
+#                                                     range = version_range)
+#                        for pkg in GENIE_PKG_DEPENDENCIES])
 
 # launch setup
 setup(
-    name = pkg_name,
-    version = find_version('src', pkg_name, '__init__.py'),
+    name = 'genie.libs.filetransferutils',
+    version = version,
 
     # descriptions
-    description =  'containing utility functions for a tftp server',
+    description = 'Genie libs FileTransferUtils: Genie FileTransferUtils Libraries',
     long_description = read('DESCRIPTION.rst'),
 
-    # the package's documentation page.
-    url = 'http://wwwin-pyats.cisco.com/cisco-shared/html/{}/docs/index.html'.\
-        format(pkg_name),
+    # the project's main homepage.
+    url = URL,
 
     # author details
-    author = 'Wei Chen',
-    author_email = 'weiche3@cisco.com',
-    maintainer_email =  'weiche3@cisco.com',
+    author = 'Cisco Systems Inc.',
+    author_email = SUPPORT,
 
     # project licensing
-    license = 'Cisco Systems, Inc. Cisco Confidential',
-
-    platforms =  ['CEL',],
+    license = LICENSE,
 
     # see https://pypi.python.org/pypi?%3Aaction=list_classifiers
-    classifiers = [
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
-        'Intended Audience :: Telecommunications Industry'
-        'License :: Other/Proprietary License',
+        'Intended Audience :: Telecommunications Industry',
+        'Intended Audience :: Information Technology',
+        'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX :: Linux',
-        'Operating System :: OS Independent',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Software Development :: Testing',
+        'Topic :: Software Development :: Build Tools',
+        'Topic :: Software Development :: Libraries',
+        'Topic :: Software Development :: Libraries :: Python Modules',
     ],
 
     # project keywords
-    keywords = 'genie cisco-shared filetransferutils',
+    keywords = 'genie pyats test automation',
+
+    # uses namespace package
+    namespace_packages = ['genie.libs'],
 
     # project packages
     packages = find_packages(where = 'src'),
@@ -171,23 +93,23 @@ setup(
     },
 
     # additional package data files that goes into the package itself
-    package_data = {'':['README.rst']},
+    package_data = {
+    },
 
-    # Standalone scripts
-    scripts = [
-    ],
+    # custom argument specifying the list of cythonized modules
+    cisco_cythonized_modules = generate_cython_modules('src/'),
 
     # console entry point
     entry_points = {
         ENTRYPOINT_GROUP : [
-            'iosxe = filetransferutils.plugins.iosxe',
-            'nxos = filetransferutils.plugins.nxos',
-            'iosxr = filetransferutils.plugins.iosxr',
+            'iosxe = genie.libs.filetransferutils.plugins.iosxe',
+            'nxos = genie.libs.filetransferutils.plugins.nxos',
+            'iosxr = genie.libs.filetransferutils.plugins.iosxr',
         ],
     },
 
     # package dependencies
-    install_requires =  ['ats.utils >= 4.1.0'],
+    install_requires = install_requires,
 
     # any additional groups of dependencies.
     # install using: $ pip install -e .[dev]
@@ -196,9 +118,11 @@ setup(
                 'restview',
                 'Sphinx',
                 'sphinxcontrib-napoleon',
-                'sphinxcontrib-mockautodoc',
                 'sphinx-rtd-theme'],
     },
+
+    # external modules
+    ext_modules = [],
 
     # any data files placed outside this package.
     # See: http://docs.python.org/3.4/distutils/setupscript.html
@@ -206,13 +130,6 @@ setup(
     #   [('target', ['list', 'of', 'files'])]
     # where target is sys.prefix/<target>
     data_files = [],
-
-    # custom commands for setup.py
-    cmdclass = {
-        'clean': CleanCommand,
-        'test': TestCommand,
-        'docs': BuildAndPreviewDocsCommand,
-    },
 
     # non zip-safe (never tested it)
     zip_safe = False,
