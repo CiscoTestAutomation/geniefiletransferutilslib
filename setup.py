@@ -96,9 +96,6 @@ setup(
     package_data = {
     },
 
-    # custom argument specifying the list of cythonized modules
-    cisco_cythonized_modules = generate_cython_modules('src/'),
-
     # console entry point
     entry_points = {
         ENTRYPOINT_GROUP : [
