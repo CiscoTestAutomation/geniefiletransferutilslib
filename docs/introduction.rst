@@ -1,7 +1,8 @@
 Introduction
 ============
 
-The ``FileTransferUtils`` package is a plugin derived implementation of the Multiprotocol_File_Transfer_Utilities_ core utilities.
+The ``GenieFileTransferUtilsLibs`` package is a plugin derived implementation of the
+:MultiprotocolUtilities:`Multiprotocol File Transfer <http>` core utilities.
 
 The package provides various device agnostic APIs for supporting file transfer
 (image, core, etc.) operation using different protocols such as tftp, ftp, etc.
@@ -12,31 +13,34 @@ The package provides various device agnostic APIs for supporting file transfer
 Installation
 ============
 
-``FileTransferUtils`` is installed with pip install within a sourced pyATS virtual environment.
+``GenieFileTransferUtilsLibs`` is installed with pip install within a sourced pyATS virtual environment.
 
 .. code-block:: bash
 
-    pip install filetransferutils
+    pip install genie.libs.filetransferutils
 
 .. note::
 
     Make sure to source the env.sh(bash)/env.csh(C shell) to setup the `pyATS` env.
-    For more information about pyATS installation please check the documentation_.
+    For more information about pyATS installation please check the
+    :pyats:`pyATS <http>` documentation.
 
-Once installed the ``FileTransferUtils`` package can be imported using `import` 
+Once installed the ``GenieFileTransferUtilsLibs`` package can be imported using `import` 
 
 .. code-block:: python
 
-    # FileTransferUtils
-    import filetransferutils
+    # GenieFileTransferUtilsLibs
+    from genie.libs import filetransferutils
 
 
-Support 
+Support
 =======
 
-pyATS Support Team is happy to help you with any question/enquiry through PieStack_ under the category of Cisco Shared Packages/FileTransferUtils. 
+Reach out to :mailto:`contact us <cisco.com>` for any questions or issues related to the
+``genie.metaparser`` package.
 
-.. _PieStack: http://piestack.cisco.com
+You can also post questions to the :communityforum:`community forum <http>` - the support team patrols
+these forums daily.
 
 
 Example 
@@ -181,6 +185,3 @@ Now the API can be called for various operations such as:
             source='ftp://1.1.1.1//auto/tftp-ssr/config.py',
             destination='running-config',
             timeout_seconds='300', device=device)
-
-.. _Multiprotocol_File_Transfer_Utilities: http://wwwin-pyats.cisco.com/documentation/html/utilities/file_transfer_utilities.html
-.. _documentation: http://wwwin-pyats.cisco.com/documentation/html/install/install.html

@@ -18,6 +18,9 @@ from datetime import datetime
 import sphinx_rtd_theme
 import sphinx_bootstrap_theme
 
+sys.path.append(os.path.abspath('links'))
+import links
+
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -35,6 +38,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'sphinx.ext.extlinks',
     'sphinxcontrib.napoleon',
 ]
 
@@ -313,3 +317,6 @@ autodoc_default_flags = ['inherited-members']
 
 autodoc_member_order = 'bysource'
 autoclass_content = 'both'
+
+# Links for the documentation
+extlinks = links.internal_links
