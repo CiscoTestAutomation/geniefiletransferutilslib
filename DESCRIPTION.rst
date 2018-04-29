@@ -42,9 +42,6 @@ Quick Start
 
 .. code-block:: console
  
-    # install pyats as a whole
-    $ pip install pyats
-
     # install genie as a whole
     $ pip install genie
 

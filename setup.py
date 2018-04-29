@@ -37,10 +37,6 @@ version, version_range = version_info('src', 'genie', 'libs', 'filetransferutils
 # generate package dependencies
 install_requires = []
 
-#install_requires.extend(['genie.{pkg} {range}'.format(pkg = pkg,
-#                                                     range = version_range)
-#                        for pkg in GENIE_PKG_DEPENDENCIES])
-
 # launch setup
 setup(
     name = 'genie.libs.filetransferutils',
