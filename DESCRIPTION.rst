@@ -25,7 +25,7 @@ home page at
 FileTransferUtils Package
 -------------------------
 
-Containing utility functions for a file transfer to/from server. This is a sub-component of Genie that contains utility functions for a file
+This is a sub-component of Genie that contains utility functions for a file
 transfer to/from server.
 
 Requirements
