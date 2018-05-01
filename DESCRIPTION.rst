@@ -1,5 +1,5 @@
-Genie FileTransferUtils Component
-=================================
+Genie FileTransferUtils libs Component
+======================================
 
 Genie is both a library framework and a test harness that facilitates rapid
 development, encourage re-usable and simplify writing test automation. Genie bundled with
@@ -25,9 +25,6 @@ home page at
 FileTransferUtils Package
 -------------------------
 
-This file contains a long description of the filetransferutils package.
-Containing utility functions for a file transfer to/from server.
-
 This is a sub-component of Genie that contains utility functions for a file
 transfer to/from server.
 
@@ -42,9 +39,6 @@ Quick Start
 
 .. code-block:: console
  
-    # install pyats as a whole
-    $ pip install pyats
-
     # install genie as a whole
     $ pip install genie
 

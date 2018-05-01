@@ -18,7 +18,7 @@ from datetime import datetime
 import sphinx_rtd_theme
 import sphinx_bootstrap_theme
 
-sys.path.append(os.path.abspath('links'))
+sys.path.append(os.path.abspath(''))
 import links
 
 # If extensions (or modules to document with autodoc) are in another directory,
@@ -78,7 +78,7 @@ copyright = '%s, ASG, Cisco Internal Confidential' % datetime.now().year
 # built documents.
 #
 # The short X.Y version.
-version = '1.0.0'
+version = ''
 # The full version, including alpha/beta/rc tags.
 release = '1.0.0'
 

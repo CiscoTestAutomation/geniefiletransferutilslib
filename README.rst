@@ -1,1 +1,0 @@
-src/genie/libs/filetransferutils/README.rst
