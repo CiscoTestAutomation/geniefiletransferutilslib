@@ -15,3 +15,13 @@ __contact__ = ['pyats-support@cisco.com', 'pyats-support-ext@cisco.com']
 __copyright__ = 'Copyright (c) 2018, Cisco Systems Inc.'
 
 from .fileutils import FileUtils
+
+try:
+    from ats.cisco.stats import CesMonitor
+    CesMonitor(action = 'geniefiletransferutilslib', application='Genie').post()
+except Exception:
+    try:
+        from ats.utils.stats import CesMonitor
+        CesMonitor(action = 'geniefiletransferutilslib', application='Genie').post()
+    except Exception:
+        pass
