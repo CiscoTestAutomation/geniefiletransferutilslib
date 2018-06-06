@@ -52,7 +52,7 @@ bash$ pip uninstall -y genie.libs.filetransferutils
 bash$ git clone https://github.com/CiscoTestAutomation/geniefiletransferutilslib.git
 
 # put all packages in dev mode
-bash$ cd genielibs
+bash$ cd geniefiletransferutilslib
 bash$ make develop
 ```
 
