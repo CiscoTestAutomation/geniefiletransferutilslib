@@ -2,7 +2,7 @@ Introduction
 ============
 
 The ``GenieFileTransferUtilsLibs`` package is a plugin derived implementation of the
-:MultiprotocolUtilities:`Multiprotocol File Transfer <http>` core utilities.
+:multiprotocolutilities:`Multiprotocol File Transfer <http>` core utilities.
 
 The package provides various device agnostic APIs for supporting file transfer
 (image, core, etc.) operation using different protocols such as tftp, ftp, etc.
