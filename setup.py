@@ -5,8 +5,6 @@
 See:
     https://packaging.python.org/en/latest/distributing.html
 '''
-from ats.utils.fileutils import ENTRYPOINT_GROUP
-
 from ciscodistutils import setup, find_packages, is_devnet_build
 from ciscodistutils.tools import (read,
                                   version_info,
@@ -94,7 +92,7 @@ setup(
 
     # console entry point
     entry_points = {
-        ENTRYPOINT_GROUP : [
+        "pyats.utils.fileutils.plugins" : [
             'iosxe = genie.libs.filetransferutils.plugins.iosxe',
             'nxos = genie.libs.filetransferutils.plugins.nxos',
             'iosxr = genie.libs.filetransferutils.plugins.iosxr',
