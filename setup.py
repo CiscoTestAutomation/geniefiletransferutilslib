@@ -5,7 +5,13 @@
 See:
     https://packaging.python.org/en/latest/distributing.html
 '''
-from ats.utils.fileutils import ENTRYPOINT_GROUP
+
+try:
+    from pyats.utils.fileutils import plugins
+    pre_pyats_50 = False
+except:
+    from ats.utils.fileutils import ENTRYPOINT_GROUP
+    pre_pyats_50 = True
 
 from ciscodistutils import setup, find_packages, is_devnet_build
 from ciscodistutils.tools import (read,
@@ -36,6 +42,24 @@ version, version_range = version_info('src', 'genie', 'libs', 'filetransferutils
 
 # generate package dependencies
 install_requires=['unicon']
+
+
+if pre_pyats_50:
+    entry_points = {
+        ENTRYPOINT_GROUP : [
+            'iosxe = genie.libs.filetransferutils.plugins.iosxe',
+            'nxos = genie.libs.filetransferutils.plugins.nxos',
+            'iosxr = genie.libs.filetransferutils.plugins.iosxr',
+        ],
+    }
+else:
+    entry_points = {
+        "pyats.utils.fileutils.plugins" : [
+            'iosxe = genie.libs.filetransferutils.plugins.iosxe',
+            'nxos = genie.libs.filetransferutils.plugins.nxos',
+            'iosxr = genie.libs.filetransferutils.plugins.iosxr',
+        ],
+    }
 
 # launch setup
 setup(
@@ -93,13 +117,7 @@ setup(
     },
 
     # console entry point
-    entry_points = {
-        ENTRYPOINT_GROUP : [
-            'iosxe = genie.libs.filetransferutils.plugins.iosxe',
-            'nxos = genie.libs.filetransferutils.plugins.nxos',
-            'iosxr = genie.libs.filetransferutils.plugins.iosxr',
-        ],
-    },
+    entry_points = entry_points,
 
     # package dependencies
     install_requires = install_requires,

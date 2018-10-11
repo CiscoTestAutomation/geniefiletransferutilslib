@@ -12,7 +12,10 @@ from ats.topology import Device
 from ats.datastructures import AttrDict
 
 # filetransferutils
-from ats.utils.fileutils import FileUtils
+try:
+    from pyats.utils.fileutils import FileUtils
+except:
+    from ats.utils.fileutils import FileUtils
 
 
 class test_filetransferutils(unittest.TestCase):
