@@ -1,10 +1,4 @@
-# Genie File Transfer Utilities
-
-This library contains the open-source library used in pyATS/Genie for
-transferring files from devices/to servers.
-
-
-## About
+# Genie geniefiletransferutilslib
 
 Genie is both a library framework and a test harness that facilitates rapid
 development, encourage re-usable and simplify writing test automation. Genie
@@ -28,32 +22,10 @@ transfer to/from server.
 
 # Installation
 
-This package is automatically installed when Genie gets installed.
-
-```bash
-bash$ pip install genie
-```
-
 Detailed installation guide can be found on [our website].
 
 [our website]: https://developer.cisco.com/site/pyats/
 
-
-# Development
-
-To develop this package, assuming you have Genie already installed in your
-environment, follow the commands below:
-
-```bash
-# remove the packages
-bash$ pip uninstall -y genie.libs.filetransferutils
-
-# clone this repo
-bash$ git clone https://github.com/CiscoTestAutomation/geniefiletransferutilslib.git
-
-# put all packages in dev mode
-bash$ cd geniefiletransferutilslib
-bash$ make develop
 ```
-
-Now you should be able to develop the files and see it reflected in your runs.
+$ pip install genie
+```

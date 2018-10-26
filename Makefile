@@ -1,19 +1,80 @@
+################################################################################
+#                                                                              #
+#                      Cisco Systems Proprietary Software                      #
+#        Not to be distributed without consent from Test Technology            #
+#                               Cisco Systems, Inc.                            #
+#                                                                              #
+################################################################################
+#                           Genie FileTransferUtils Makefile
+#
+# Author:
+#   Siming Yuan        (siyuan@cisco.com)    - CSG
+#   Jean-Benoit Aubin  (jeaubin@cisco.com)   - CSG
+#
+# Support:
+#	python-core@cisco.com
+#
+# Version:
+#   v2.1
+#
+# Date:
+#   April 2018
+#
+# About This File:
+#   This script will build Genie FileTransferUtils into Python PyPI packages.
+#	Make sure all requirements are met before adding new package names to
+#	PACKAGES variable.
+#
+# Requirements:
+#	1. Module name is the same as package name.
+#	2. setup.py file is stored within the module folder
+################################################################################
+
 # Variables
+PKG_NAME      = filetransferutils
 BUILD_ROOT    = $(shell pwd)/__build__
 OUTPUT_DIR    = $(BUILD_ROOT)/dist
 BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(OUTPUT_DIR)
+PROD_USER     = pyadm@pyats-ci
+PROD_PKGS     = /auto/pyats/packages/cisco-shared
+PROD_SCRIPTS  = /auto/pyats/bin
 TESTCMD       = ./tests/runAll --path tests/
+WATCHERS      = asg-genie-dev@cisco.com
+HEADER        = [Watchdog]
+PYPIREPO      = pypitest
 
 # Development pkg requirements
 DEPENDENCIES  = restview psutil Sphinx wheel asynctest
-DEPENDENCIES += setproctitle sphinxcontrib-napoleon sphinx-rtd-theme httplib2 
+DEPENDENCIES += setproctitle sphinxcontrib-napoleon sphinx-rtd-theme httplib2
 DEPENDENCIES += pip-tools Cython requests
 
 
-PKGS      = filetransferutils
+ifeq ($(UPLOADPYPI), true)
+	DEVNET = true
+endif
 
-.PHONY: help clean check develop undevelop test all $(PKGS)
+ifeq ($(MAKECMDGOALS), devnet)
+	DEVNET = true
+	INCLUDE_TESTS = false
+endif
 
+ifeq ($(INCLUDE_TESTS), true)
+	BUILD_CMD += --include-tests
+endif
+
+# build options
+ifeq ($(DEVNET), true)
+	BUILD_CMD += --devnet
+endif
+
+# add upload flag ONLY if it's a devnet build and asked for upload
+ifeq ($(DEVNET)$(UPLOADPYPI), truetrue)
+	BUILD_CMD += upload -r $(PYPIREPO)
+endif
+
+
+.PHONY: help docs distribute_docs clean check\
+	    develop undevelop distribute test package
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
@@ -29,8 +90,36 @@ help:
 	@echo ""
 	@echo "     --- build specific targets ---"
 	@echo ""
-	@echo " filetransferutils    build Genie.filetransferutils - Genie FileTransferUtils libraries"
+	@echo " package              build Genie.filetransferutils - Genie FileTransferUtils libraries"
 	@echo ""
+	@echo "     --- distributions to production environment ---"
+	@echo ""
+	@echo " distribute           distribute built pkgs to production server"
+	@echo ""
+	@echo "     --- redirects ---"
+	@echo " docs             create all documentation locally. This the same as"
+	@echo "                  running 'make docs' in ./docs/"
+	@echo " distribute_docs  release local documentation to website. This is"
+	@echo "                  the same as running 'make distribute' in ./docs/"
+	@echo ""
+	@echo "     --- build arguments ---"
+	@echo " DEVNET=true              build for devnet style "
+	@echo " INCLUDE_TESTS=true       build include unittests in pkgs"
+
+docs:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Redirecting make docs to ./docs"
+	@cd ./docs && make docs
+	@echo ""
+	@echo "Done."
+	@echo ""
+
+distribute_docs:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Redirecting make distribute_html to ./docs"
+	@cd ./docs && make distribute
 
 clean:
 	@echo ""
@@ -68,8 +157,18 @@ undevelop:
 	@echo "Done."
 	@echo ""
 
+distribute:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Copying all distributable to $(PROD_PKGS)"
+	@test -d $(OUTPUT_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
+	@ssh -q $(PROD_USER) 'test -e $(PROD_PKGS)/$(PKG_NAME) || mkdir $(PROD_PKGS)/$(PKG_NAME)'
+	@scp $(OUTPUT_DIR)/* $(PROD_USER):$(PROD_PKGS)/$(PKG_NAME)/
+	@echo ""
+	@echo "Done."
+	@echo ""
 
-filetransferutils:
+package:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Building Genie FileTransferUtils Package"
@@ -90,7 +189,7 @@ test:
 	@echo "Running all unit tests..."
 	@echo ""
 
-	@$(TESTCMD) 
+	@$(TESTCMD)
 
 	@echo "Completed unit testing"
 	@echo ""
