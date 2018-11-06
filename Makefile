@@ -44,6 +44,10 @@ DEPENDENCIES  = restview psutil Sphinx wheel asynctest
 DEPENDENCIES += setproctitle sphinxcontrib-napoleon sphinx-rtd-theme httplib2
 DEPENDENCIES += pip-tools Cython requests
 
+ifeq ($(MAKECMDGOALS), devnet)
+	BUILD_CMD += --devnet
+endif
+
 .PHONY: clean package distribute develop undevelop help devnet\
         docs test install_build_deps uninstall_build_deps
 
@@ -74,12 +78,12 @@ install_build_deps:
 	@pip install --index-url=http://pyats-pypi.cisco.com/simple \
 	             --trusted-host=pyats-pypi.cisco.com \
 	             cisco-distutils
- 
+
 uninstall_build_deps:
 	@echo "--------------------------------------------------------------------"
 	@echo "Uninstalling pyats-distutils"
 	@pip uninstall cisco-distutils
- 
+
 docs:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
@@ -87,50 +91,50 @@ docs:
 	@sphinx-build -b html -c docs/ -d ./__build__/documentation/doctrees docs/ ./__build__/documentation/html
 	@echo "Completed building docs for preview."
 	@echo ""
- 
+
 test:
 	@$(TESTCMD)
- 
+
 package:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Building $(PKG_NAME) distributable: $@"
 	@echo ""
-	
+
 	$(BUILD_CMD)
-	
+
 	@echo ""
 	@echo "Completed building: $@"
 	@echo ""
- 
+
 develop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Building and installing $(PKG_NAME) development distributable: $@"
 	@echo ""
-	
+
 	@pip install $(DEPENDENCIES)
-	
+
 	@$(PYTHON) setup.py develop --no-deps
-	
+
 	@pip install -e ".[dev]"
-	
+
 	@echo ""
 	@echo "Completed building and installing: $@"
 	@echo ""
- 
+
 undevelop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
 	@echo "Uninstalling $(PKG_NAME) development distributable: $@"
 	@echo ""
-	
+
 	@$(PYTHON) setup.py develop --no-deps -q --uninstall
-	
+
 	@echo ""
 	@echo "Completed uninstalling: $@"
 	@echo ""
- 
+
 clean:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
@@ -142,7 +146,7 @@ clean:
 	@echo ""
 	@echo "Done."
 	@echo ""
- 
+
 distribute:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
