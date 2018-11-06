@@ -29,7 +29,7 @@
 ################################################################################
 
 # Variables
-PKG_NAME      = filetransferutils
+PKG_NAME      = genie.libs.filetransferutils
 BUILD_DIR     = $(shell pwd)/__build__
 DIST_DIR      = $(BUILD_DIR)/dist
 PROD_USER     = pyadm@pyats-ci
