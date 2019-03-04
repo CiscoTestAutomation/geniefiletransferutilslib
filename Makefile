@@ -1,107 +1,159 @@
+################################################################################
+#                                                                              #
+#                      Cisco Systems Proprietary Software                      #
+#        Not to be distributed without consent from Test Technology            #
+#                               Cisco Systems, Inc.                            #
+#                                                                              #
+################################################################################
+#                            genie.libs.filetransferutils Internal Makefile
+#
+# Author:
+#   pyats-support@cisco.com
+#
+# Support:
+#   pyats-support@cisco.com
+#
+# Version:
+#   v3.0
+#
+# Date:
+#   November 2018
+#
+# About This File:
+#   This script will build the genie.libs.filetransferutils package for
+#   distribution in PyPI server
+#
+# Requirements:
+#	1. Module name is the same as package name.
+#	2. setup.py file is stored within the module folder
+################################################################################
+
 # Variables
-BUILD_ROOT    = $(shell pwd)/__build__
-OUTPUT_DIR    = $(BUILD_ROOT)/dist
-BUILD_CMD     = python setup.py bdist_wheel --dist-dir=$(OUTPUT_DIR)
-TESTCMD       = ./tests/runAll --path tests/
+PKG_NAME      = genie.libs.filetransferutils
+BUILD_DIR     = $(shell pwd)/__build__
+DIST_DIR      = $(BUILD_DIR)/dist
+PROD_USER     = pyadm@pyats-ci
+PROD_PKGS     = /auto/pyats/packages/cisco-shared
+PYTHON        = python
+TESTCMD       = ./tests/runAll --path=./tests/
+BUILD_CMD     = $(PYTHON) setup.py bdist_wheel --dist-dir=$(DIST_DIR)
+PYPIREPO      = pypitest
 
 # Development pkg requirements
 DEPENDENCIES  = restview psutil Sphinx wheel asynctest
-DEPENDENCIES += setproctitle sphinxcontrib-napoleon sphinx-rtd-theme httplib2 
+DEPENDENCIES += setproctitle sphinxcontrib-napoleon sphinx-rtd-theme httplib2
 DEPENDENCIES += pip-tools Cython requests
 
+ifeq ($(MAKECMDGOALS), devnet)
+	BUILD_CMD += --devnet
+endif
 
-PKGS      = filetransferutils
-
-.PHONY: help clean check develop undevelop test all $(PKGS)
-
+.PHONY: clean package distribute develop undevelop help devnet\
+        docs test install_build_deps uninstall_build_deps
 
 help:
 	@echo "Please use 'make <target>' where <target> is one of"
 	@echo ""
-	@echo "     --- common actions ---"
+	@echo "package               Build the package"
+	@echo "test                  Test the package"
+	@echo "distribute            Distribute the package to internal Cisco PyPi server"
+	@echo "clean                 Remove build artifacts"
+	@echo "develop               Build and install development package"
+	@echo "undevelop             Uninstall development package"
+	@echo "docs                  Build Sphinx documentation for this package"
+	@echo "devnet                Build DevNet package."
+	@echo "install_build_deps    install pyats-distutils"
+	@echo "uninstall_build_deps  remove pyats-distutils"
 	@echo ""
-	@echo "	check                check setup.py content"
-	@echo " clean                remove the build directory ($(BUILD_ROOT))"
-	@echo " help                 display this help"
-	@echo " test                 run all unittests in an efficient manner"
-	@echo " develop              set all package to development mode"
-	@echo " undevelop            unset the above development mode"
-	@echo ""
-	@echo "     --- build specific targets ---"
-	@echo ""
-	@echo " filetransferutils    build Genie.filetransferutils - Genie FileTransferUtils libraries"
+	@echo "     --- build arguments ---"
+	@echo " DEVNET=true              build for devnet style (cythonized, no ut)"
+
+devnet: package
+	@echo "Completed building DevNet packages"
 	@echo ""
 
-clean:
+install_build_deps:
+	@echo "--------------------------------------------------------------------"
+	@echo "Installing cisco-distutils"
+	@pip install --index-url=http://pyats-pypi.cisco.com/simple \
+	             --trusted-host=pyats-pypi.cisco.com \
+	             cisco-distutils
+
+uninstall_build_deps:
+	@echo "--------------------------------------------------------------------"
+	@echo "Uninstalling pyats-distutils"
+	@pip uninstall cisco-distutils
+
+docs:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
-	@echo "Removing make directory: $(BUILD_ROOT)"
-	@rm -rf $(BUILD_ROOT)
-	@python setup.py clean
-	@echo "Removing *.pyc *.c and __pycache__/ files"
-	@find . -type f -name "*.pyc" | xargs rm -vrf
-	@find . -type f -name "*.c" | xargs rm -vrf
-	@find . -type d -name "__pycache__" | xargs rm -vrf
+	@echo "Building $(PKG_NAME) documentation for preview: $@"
+	@sphinx-build -b html -c docs/ -d ./__build__/documentation/doctrees docs/ ./__build__/documentation/html
+	@echo "Completed building docs for preview."
 	@echo ""
-	@echo "Done."
+
+test:
+	@$(TESTCMD)
+
+package:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Building $(PKG_NAME) distributable: $@"
+	@echo ""
+
+	$(BUILD_CMD)
+
+	@echo ""
+	@echo "Completed building: $@"
 	@echo ""
 
 develop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
-	@echo "Installing development dependencies"
+	@echo "Building and installing $(PKG_NAME) development distributable: $@"
+	@echo ""
+
 	@pip install $(DEPENDENCIES)
+
+	@$(PYTHON) setup.py develop --no-deps
+
+	@pip install -e ".[dev]"
+
 	@echo ""
-	@echo "--------------------------------------------------------------------"
-	@echo "Setting up development environment"
-	@python setup.py develop --no-deps
-	@echo ""
-	@echo "Done."
+	@echo "Completed building and installing: $@"
 	@echo ""
 
 undevelop:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
-	@echo "Removing development environment"
-	@python setup.py develop --no-deps --uninstall
+	@echo "Uninstalling $(PKG_NAME) development distributable: $@"
+	@echo ""
+
+	@$(PYTHON) setup.py develop --no-deps -q --uninstall
+
+	@echo ""
+	@echo "Completed uninstalling: $@"
+	@echo ""
+
+clean:
+	@echo ""
+	@echo "--------------------------------------------------------------------"
+	@echo "Removing make directory: $(BUILD_DIR)"
+	@rm -rf $(BUILD_DIR) $(DIST_DIR)
+	@echo ""
+	@echo "Removing build artifacts ..."
+	@$(PYTHON) setup.py clean
 	@echo ""
 	@echo "Done."
 	@echo ""
 
-
-filetransferutils:
+distribute:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
-	@echo "Building Genie FileTransferUtils Package"
-
-	mkdir -p $(OUTPUT_DIR)/
-	$(BUILD_CMD)
-
-	@echo "Completed building Genie Namespace Package"
+	@echo "Copying all distributable to $(PROD_PKGS)"
+	@test -d $(DIST_DIR) || { echo "Nothing to distribute! Exiting..."; exit 1; }
+	@ssh -q $(PROD_USER) 'test -e $(PROD_PKGS)/$(PKG_NAME) || mkdir $(PROD_PKGS)/$(PKG_NAME)'
+	@scp $(DIST_DIR)/* $(PROD_USER):$(PROD_PKGS)/$(PKG_NAME)/
 	@echo ""
-
-	@echo "--------------------------------------------------------------------"
-	@echo "Building pyATS distributable: $@"
-	@echo ""
-
-test:
-	@echo ""
-	@echo "--------------------------------------------------------------------"
-	@echo "Running all unit tests..."
-	@echo ""
-
-	@$(TESTCMD) 
-
-	@echo "Completed unit testing"
-	@echo ""
-
-check:
-	@echo ""
-	@echo "--------------------------------------------------------------------"
-	@echo "Checking setup.py consistency..."
-	@echo ""
-
-	@python setup.py check
-
-	@echo "Done"
+	@echo "Done."
 	@echo ""
