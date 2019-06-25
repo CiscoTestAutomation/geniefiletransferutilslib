@@ -10,6 +10,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SPHINXAPI     = sphinx-apidoc
 PAPER         = letter
+SOURCEDIR     = .
 BUILDDIR      = $(shell pwd)/../__build__/documentation
 CURRDIR       = $(shell pwd)
 PROD_USER     = pyadm@pyats-ci
