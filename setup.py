@@ -40,6 +40,7 @@ install_requires=['unicon']
 
 entry_points = {
     ENTRYPOINT_GROUP : [
+        'ios = genie.libs.filetransferutils.plugins.ios',
         'iosxe = genie.libs.filetransferutils.plugins.iosxe',
         'nxos = genie.libs.filetransferutils.plugins.nxos',
         'iosxr = genie.libs.filetransferutils.plugins.iosxr',
