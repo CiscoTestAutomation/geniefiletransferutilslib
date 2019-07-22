@@ -44,6 +44,7 @@ entry_points = {
         'iosxe = genie.libs.filetransferutils.plugins.iosxe',
         'nxos = genie.libs.filetransferutils.plugins.nxos',
         'iosxr = genie.libs.filetransferutils.plugins.iosxr',
+        'junos = genie.libs.filetransferutils.plugins.junos',
     ],
 }
 
