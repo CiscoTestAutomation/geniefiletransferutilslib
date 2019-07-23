@@ -119,6 +119,10 @@ class FileUtils(FileUtilsBase):
                       action='sendline()',
                       loop_continue=True,
                       continue_timer=False),
+            Statement(pattern=r'Delete filename.*',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
             ])
 
         try:
