@@ -1,33 +1,49 @@
-""" File utils base class for JunOS devices. """
+'''
+File utils base class for JunOS devices
+'''
+
+# Python
+import sys
+import pdb
 
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
 
-# filemode_to_mode
+# pyATS
 from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
 
-# 'file list' parser
+# Unicon
+from unicon.eal.dialogs import Statement, Dialog
+
+# Genie
 from genie.libs.parser.junos.show_platform import FileList
 
 
 class FileUtils(FileUtilsDeviceBase):
 
-    def copyfile(self, source, destination, timeout_seconds=300, vrf=None, *args, **kwargs):
+    def copyfile(self, source, destination='', timeout_seconds=300, vrf=None, *args, **kwargs):
         ''' Copy a file to/from JunOS device '''
 
         # Build command
-        cmd = 'file copy {s} {d}'.format(s=source, d=destination)
+        cmd = 'load merge {}'.format(source)
 
-        # Extract the server address to be used later for authentication
+        # Unicon reply dialog
+        dialog = Dialog(
+                    [Statement(pattern=r'.*password:.*',
+                               action='sendline({})'.\
+                               format(self.device.filetransfer_attributes['password']),
+                               loop_continue=True,
+                               continue_timer=False),
+                    ])
+
+        # Configure
         try:
-            used_server = self.get_server(source, destination)
-        except:
-            used_server = None
-
-        # Execute command
-        super().copyfile(source=source, destination=destination,
-                         timeout_seconds=timeout_seconds, cmd=cmd,
-                         used_server=used_server, *args, **kwargs)
+            ret = self.device.configure(cmd, reply=dialog)
+        except Exception as e:
+            raise Exception("Issue sending '{}'".format(cmd)) from e
+        else:
+            if 'error' in ret:
+                raise Exception("Issue sending '{}'".format(cmd)) from e
 
 
     def dir(self, target, timeout_seconds=300, *args, **kwargs):
@@ -76,10 +92,10 @@ class FileUtils(FileUtilsDeviceBase):
         try:
             ret = self.device.execute(cmd)
         except Exception as e:
-            raise Exception("Issue sending {c}".format(c=cmd)) from e
+            raise Exception("Issue sending '{}'".format(cmd)) from e
         else:
-            if 'ERROR' in ret:
-                raise Exception("Issue sending {c}".format(c=cmd)) from e
+            if 'error' in ret:
+                raise Exception("Issue sending '{}'".format(cmd)) from e
 
 
     def renamefile(self, source, destination, timeout_seconds=300, *args, **kwargs):
@@ -92,10 +108,10 @@ class FileUtils(FileUtilsDeviceBase):
         try:
             ret = self.device.execute(cmd)
         except Exception as e:
-            raise Exception("Issue sending {c}".format(c=cmd)) from e
+            raise Exception("Issue sending '{}'".format(cmd)) from e
         else:
-            if 'ERROR' in ret:
-                raise Exception("Issue sending {c}".format(c=cmd)) from e
+            if 'error' in ret:
+                raise Exception("Issue sending '{}'".format(cmd)) from e
 
 
     def chmod(self, target, mode, timeout_seconds=300, *args, **kwargs):
