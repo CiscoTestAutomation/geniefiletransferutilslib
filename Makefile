@@ -73,16 +73,10 @@ devnet: package
 	@echo ""
 
 install_build_deps:
-	@echo "--------------------------------------------------------------------"
-	@echo "Installing cisco-distutils"
-	@pip install --index-url=http://pyats-pypi.cisco.com/simple \
-	             --trusted-host=pyats-pypi.cisco.com \
-	             --upgrade cisco-distutils
+	@echo "nothing to do"
 	 
 uninstall_build_deps:
-	@echo "--------------------------------------------------------------------"
-	@echo "Uninstalling pyats-distutils"
-	@pip uninstall cisco-distutils
+	@echo "nothing to do"
 
 docs:
 	@echo ""
