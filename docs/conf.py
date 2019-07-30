@@ -16,15 +16,9 @@ import sys
 import os
 from datetime import datetime
 import sphinx_rtd_theme
-import sphinx_bootstrap_theme
 
 sys.path.append(os.path.abspath(''))
 import links
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../'))
 
 # -- General configuration ------------------------------------------------
 
@@ -37,7 +31,6 @@ sys.path.insert(0, os.path.abspath('../'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.viewcode',
     'sphinx.ext.extlinks',
     'sphinx.ext.napoleon',
 ]
@@ -58,7 +51,7 @@ extensions = [
 #}
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = []
 
 # The suffix of source filenames.
 source_suffix = '.rst'
@@ -70,8 +63,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'FileTransferUtils'
-copyright = '%s, ASG, Cisco Internal Confidential' % datetime.now().year
+project = 'Genie.FileTransferUtils'
+copyright = '%s, Cisco Systems Inc.' % datetime.now().year
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -318,5 +311,9 @@ autodoc_default_flags = ['inherited-members']
 autodoc_member_order = 'bysource'
 autoclass_content = 'both'
 
+
 # Links for the documentation
-extlinks = links.internal_links
+if '-devnet' in sys.argv or os.environ.get('DEVNET', None) == 'true':
+    extlinks = links.external_links
+else:
+    extlinks = links.internal_links
