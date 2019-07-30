@@ -5,24 +5,24 @@
 See:
     https://packaging.python.org/en/latest/distributing.html
 '''
-
+import re
+import os
 from pyats.utils.fileutils.core.plugin_manager import ENTRYPOINT_GROUP
 
-from ciscodistutils import setup, find_packages, is_devnet_build
-from ciscodistutils.tools import (read,
-                                  version_info,
-                                  generate_cython_modules)
+from setuptools import setup, find_packages, Command
 
-from ciscodistutils.common import (AUTHOR,
-                                   URL,
-                                   CLASSIFIERS,
-                                   PYATS_PKG,
-                                   SUPPORT,
-                                   LICENSE,
-                                   STD_EXTRA_REQ)
+def read(*paths):
+    '''read and return txt content of file'''
+    with open(os.path.join(os.path.dirname(__file__), *paths)) as fp:
+        return fp.read()
 
-# compute version range
-version, version_range = version_info('src', 'genie', 'libs', 'filetransferutils', '__init__.py')
+def find_version(*paths):
+    '''reads a file and returns the defined __version__ value'''
+    version_match = re.search(r"^__version__ ?= ?['\"]([^'\"]*)['\"]",
+                              read(*paths), re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError("Unable to find version string.")
 
 # generate package dependencies
 install_requires=['unicon']
@@ -40,24 +40,45 @@ entry_points = {
 # launch setup
 setup(
     name = 'genie.libs.filetransferutils',
-    version = version,
+    version = find_version('src', 'genie', 'libs', 
+                           'filetransferutils', '__init__.py'),
 
     # descriptions
     description = 'Genie libs FileTransferUtils: Genie FileTransferUtils Libraries',
     long_description = read('DESCRIPTION.rst'),
 
     # the project's main homepage.
-    url = URL,
+    url = 'https://developer.cisco.com/pyats',
 
     # author details
-    author = AUTHOR,
-    author_email = SUPPORT,
+    author = 'Cisco Systems Inc.',
+    author_email = 'pyats-support-ext@cisco.com',
 
     # project licensing
-    license = LICENSE,
+    license = 'Apache 2.0',
 
     # see https://pypi.python.org/pypi?%3Aaction=list_classifiers
-    classifiers = CLASSIFIERS,
+    classifiers = [
+    'Development Status :: 6 - Mature',
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Telecommunications Industry',
+    'Intended Audience :: Information Technology',
+    'Intended Audience :: System Administrators',
+    'License :: OSI Approved :: Apache Software License',
+    'Operating System :: MacOS',
+    'Operating System :: POSIX :: Linux',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3 :: Only',
+    'Programming Language :: Python :: Implementation :: CPython',
+    'Topic :: Software Development :: Testing',
+    'Topic :: Software Development :: Build Tools',
+    'Topic :: Software Development :: Libraries',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    ],
 
     # project keywords
     keywords = 'genie pyats test automation',

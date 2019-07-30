@@ -195,6 +195,8 @@ distribute:
 	@echo "Done."
 	@echo ""
 
+package: filetransferutils
+
 filetransferutils:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
