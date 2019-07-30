@@ -135,6 +135,8 @@ distribute_docs:
 	@echo "Redirecting make distribute_html to ./docs"
 	@cd ./docs && make distribute
 
+html: docs
+
 clean:
 	@echo ""
 	@echo "--------------------------------------------------------------------"
