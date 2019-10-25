@@ -92,7 +92,23 @@ class test_filetransferutils(unittest.TestCase):
         Copy complete, now saving to disk (please wait)...
         Copy complete.
     '''}
+    raw8 = {'execute.return_value': '''
+        copy running-config sftp://1.1.1.1//home/virl vrf management
+        Enter username: myuser
 
+        The authenticity of host '1.1.1.1 (1.1.1.1)' can't be established.
+        ECDSA key fingerprint is SHA256:Q37/fav3nPJT5Y+7IsgST4uN0c2tyToJiDF/gp+wItA.
+        Are you sure you want to continue connecting (yes/no)? yes
+        Warning: Permanently added '1.1.1.1' (ECDSA) to the list of known hosts.
+        Outbound-ReKey for 1.1.1.1:22
+        Inbound-ReKey for 1.1.1.1:22
+        myuser@1.1.1.1's password: 
+        Connected to 1.1.1.1.
+        sftp> put  /var/tmp/vsh/R3_nx-running-config  /home/virl 
+        Uploading /var/tmp/vsh/R3_nx-running-config to /home/virl/R3_nx-running-config
+        /var/tmp/vsh/R3_nx-running-config                                               
+                                                                                                                                                                                                                                                                                                                                    /var/tmp/vsh/R3_nx-running-config                                                                                                                                                                                                                                                                                                                                                                                                                                                            100%   14KB 355.1KB/s   00:00    
+    '''}
     outputs = {}
     outputs['copy bootflash:/virtual-instance.conf '
         'ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management']\
@@ -102,8 +118,9 @@ class test_filetransferutils(unittest.TestCase):
     outputs['move bootflash:mem_leak.tcl new_file.tcl'] = raw4
     outputs['show clock > ftp://1.1.1.1//auto/tftp-ssr/show_clock vrf management'] = raw5
     outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management'] = raw7
+    outputs['copy running-config sftp://1.1.1.1//home/virl vrf management'] = raw8
 
-    def mapper(self, key, timeout=None, reply= None):
+    def mapper(self, key, timeout=None, reply= None, prompt_recovery=False):
         return self.outputs[key]
 
     def test_copyfile(self):
@@ -115,6 +132,16 @@ class test_filetransferutils(unittest.TestCase):
         self.fu_device.copyfile(source='bootflash:/virtual-instance.conf',
             destination='ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf',
             timeout_seconds='300', device=self.device)
+
+    def test_copyfile_sftp(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        # Call copyfiles
+        self.fu_device.copyfile(source='running-config',
+            destination='sftp://1.1.1.1//home/virl',
+            vrf='management', device=self.device)
 
     def test_dir(self):
 

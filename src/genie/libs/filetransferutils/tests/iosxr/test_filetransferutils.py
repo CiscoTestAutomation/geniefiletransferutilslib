@@ -96,6 +96,18 @@ class test_filetransferutils(unittest.TestCase):
         [OK]
     '''}
 
+    raw7 = {'execute.return_value': '''
+            sftp running-config myuser@1.1.1.1:/home/virl vrf management
+            Thu Oct 10 15:45:18.989 UTC
+            Connecting to 172.16.1.250...
+            Password: 
+
+            /misc/disk1/running-config
+              Overwrite /home/virl/running-config on host 172.16.1.250, continu? [
+              yes/no]: yes
+              Transferred 11332 Bytes
+              11332 bytes copied in 0 sec (251822)bytes/sec
+    '''}
     outputs = {}
     outputs['copy disk0:/fake_config_2.tcl '
         'ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl'] = raw1
@@ -105,8 +117,8 @@ class test_filetransferutils(unittest.TestCase):
         raw4
     outputs['copy running-config ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl'] = \
         raw6
-
-    def mapper(self, key, timeout=None, reply= None):
+    outputs['sftp running-config myuser@1.1.1.1:/home/virl'] = raw7
+    def mapper(self, key, timeout=None, reply= None, prompt_recovery=False):
         return self.outputs[key]
 
     def test_copyfile(self):
@@ -118,6 +130,15 @@ class test_filetransferutils(unittest.TestCase):
         self.fu_device.copyfile(source='disk0:/fake_config_2.tcl',
             destination='ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl',
             timeout_seconds='300', device=self.device)
+
+    def test_copyfile_sftp(self):
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        # Call copyfiles
+        self.fu_device.copyfile(source='running-config',
+                                destination='sftp://1.1.1.1//home/virl',
+                                device=self.device)
 
     def test_dir(self):
 

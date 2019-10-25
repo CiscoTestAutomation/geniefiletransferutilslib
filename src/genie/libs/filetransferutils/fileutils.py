@@ -91,15 +91,19 @@ class FileUtils(FileUtilsBase):
                       action='sendline()',
                       loop_continue=True,
                       continue_timer=False),
-            Statement(pattern=r'Destination username:.*',
+            Statement(pattern=r'Are you sure you want to continue connecting.*',
+                      action='sendline(yes)',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Destination username.*',
                       action='sendline({username})'.format(username=username),
                       loop_continue=True,
                       continue_timer=False),
-            Statement(pattern=r'Destination password:.*',
+            Statement(pattern=r'Destination password.*',
                       action='sendline({password})'.format(password=password),
                       loop_continue=True,
                       continue_timer=False),
-            Statement(pattern=r'Destination file name.*',
+            Statement(pattern=r'.*[D|d]estination file *name.*',
                       action='sendline()',
                       loop_continue=True,
                       continue_timer=False),
@@ -107,7 +111,11 @@ class FileUtils(FileUtilsBase):
                       action='sendline({username})'.format(username=username),
                       loop_continue=True,
                       continue_timer=False),
-            Statement(pattern=r'Password:',
+            Statement(pattern=r'.*[P|p]assword: *',
+                      action='sendline({password})'.format(password=password),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'[P|p]assword for .*',
                       action='sendline({password})'.format(password=password),
                       loop_continue=True,
                       continue_timer=False),
@@ -123,10 +131,22 @@ class FileUtils(FileUtilsBase):
                       action='sendline()',
                       loop_continue=True,
                       continue_timer=False),
+            Statement(pattern=r'Source username.*',
+                      action='sendline({username})'.format(username=username),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Source filename.*',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r' *[O|o]verwrite.*continu.*',
+                      action='sendline({overwrite})'.format(overwrite='yes' if kwargs.get('overwrite', True) else 'no'),
+                      loop_continue=True,
+                      continue_timer=False),
             ])
 
         try:
-            output = device.execute(cli, timeout=timeout_seconds, reply=dialog)
+            output = device.execute(cli, timeout=timeout_seconds, reply=dialog, prompt_recovery=True)
 
             # Error patterns to be caught when executing cli on device
             fail_msg = ['failed to copy', 'Unable to find', 'Error opening',\
@@ -228,8 +248,10 @@ class FileUtils(FileUtilsBase):
             # Validate parsed address is a valid IP address
             if parsed.netloc:
                 try:
-                    ipaddress.ip_address(parsed.netloc)
-                    used_server = parsed.netloc
+                    # remove tailing colon
+                    netloc = parsed.netloc.split(':')[0]
+                    ipaddress.ip_address(netloc)
+                    used_server = netloc
                     break
                 except ValueError:
                     continue

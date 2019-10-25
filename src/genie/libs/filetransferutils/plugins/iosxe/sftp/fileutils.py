@@ -1,4 +1,4 @@
-""" File utils base class for FTP on IOS devices. """
+""" File utils base class for SFTP on IOSXE devices. """
 
 from ..fileutils import FileUtils as FileUtilsXEBase
 

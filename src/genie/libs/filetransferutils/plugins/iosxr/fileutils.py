@@ -70,14 +70,35 @@ class FileUtils(FileUtilsDeviceBase):
                 ...     destination='running-config',
                 ...     timeout_seconds='300', device=device)
         """
-        if vrf:
-            cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
-                t=destination, vrf_value=vrf)
-        else:
-            cmd = 'copy {f} {t}'.format(f=source, t=destination)
-
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)
+        username, _ = self.get_auth(used_server)
+        ssh_protocol = {'scp', 'sftp'}
+
+        # if protocol is scp or sftp
+        for p in ssh_protocol:
+            if '{}:'.format(p) in source or '{}:'.format(p) in destination:
+                # scp requires username in the address
+                if '{}:'.format(p) in source:
+                    source = username + '@' + source
+                elif '{}:'.format(p) in destination:
+                    destination = username + '@' + destination
+
+                if vrf:
+                    cmd = '{p} {s} {d} vrf {vrf_value}'.format(p=p, s=source.replace('{}://'.format(p), '').replace('//', ':/'),
+                                                               d=destination.replace('{}://'.format(p), '').replace('//', ':/'),
+                                                               vrf_value=vrf)
+                else:
+                    cmd = '{p} {s} {d}'.format(p=p, s=source.replace('{}://'.format(p), '').replace('//', ':/'),
+                                               d=destination.replace('{}://'.format(p), '').replace('//', ':/'))
+                break
+
+        else:
+            if vrf:
+                cmd = 'copy {f} {t} vrf {vrf_value}'.format(f=source,
+                    t=destination, vrf_value=vrf)
+            else:
+                cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
         super().copyfile(source=source, destination=destination,
             timeout_seconds=timeout_seconds, cmd=cmd, used_server=used_server,

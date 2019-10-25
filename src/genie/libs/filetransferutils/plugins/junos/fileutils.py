@@ -21,29 +21,30 @@ from genie.libs.parser.junos.show_platform import FileList
 
 class FileUtils(FileUtilsDeviceBase):
 
-    def copyfile(self, source, destination='', timeout_seconds=300, vrf=None, *args, **kwargs):
+    def copyfile(self, source, destination, timeout_seconds=300, vrf=None, *args,
+                 **kwargs):
         ''' Copy a file to/from JunOS device '''
 
         # Build command
-        cmd = 'load merge {}'.format(source)
+        parsed_source = self.parse_url(source)
+        parsed_dest = self.parse_url(destination)
+        used_server = self.get_server(source, destination)
+        username, _ = self.get_auth(used_server)
 
-        # Unicon reply dialog
-        dialog = Dialog(
-                    [Statement(pattern=r'.*password:.*',
-                               action='sendline({})'.\
-                               format(self.device.filetransfer_attributes['password']),
-                               loop_continue=True,
-                               continue_timer=False),
-                    ])
+        # for junos we need to put username in the address.. so reconstruct it here
+        if parsed_dest.netloc:
+            destination = ''.join(
+                [parsed_dest.scheme, '://', username, '@', parsed_dest.netloc,
+                 parsed_dest.path])
+        if parsed_source.netloc:
+            source = ''.join(
+                [parsed_source.scheme, '://', username, '@', parsed_source.netloc,
+                 parsed_source.path])
+        cmd = 'file copy {s} {d}'.format(s=source, d=destination)
 
-        # Configure
-        try:
-            ret = self.device.configure(cmd, reply=dialog)
-        except Exception as e:
-            raise Exception("Issue sending '{}'".format(cmd)) from e
-        else:
-            if 'error' in ret:
-                raise Exception("Issue sending '{}'".format(cmd)) from e
+        super().copyfile(source=source, destination=destination,
+                         timeout_seconds=timeout_seconds, cmd=cmd,
+                         used_server=used_server, *args, **kwargs)
 
 
     def dir(self, target, timeout_seconds=300, *args, **kwargs):

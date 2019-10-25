@@ -1,6 +1,6 @@
 """ File utils base class for TFTP on IOSXR devices. """
 
-from ..fileutils import FileUtils as FileUtilsXEBase
+from ..fileutils import FileUtils as FileUtilsXRBase
 
-class FileUtils(FileUtilsXEBase):
+class FileUtils(FileUtilsXRBase):
 	pass

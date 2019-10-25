@@ -1,4 +1,4 @@
-""" File utils base class for FTP on NXOS devices. """
+""" File utils base class for SFTP on NXOS devices. """
 
 from ..fileutils import FileUtils as FileUtilsNXBase
 

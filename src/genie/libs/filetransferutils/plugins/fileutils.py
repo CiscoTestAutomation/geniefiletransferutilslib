@@ -392,7 +392,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         # Check server created file
         try:
-            futlinux.check_file(target)
+            futlinux.checkfile(target)
         except Exception as e:
             raise type(e)("Server created file can't be checked") from e
 
