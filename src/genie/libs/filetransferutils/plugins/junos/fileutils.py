@@ -9,9 +9,6 @@ import pdb
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
 
-# pyATS
-from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
-
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
 
@@ -24,6 +21,14 @@ class FileUtils(FileUtilsDeviceBase):
     def copyfile(self, source, destination, timeout_seconds=300, vrf=None, *args,
                  **kwargs):
         ''' Copy a file to/from JunOS device '''
+
+        # update source and destination with the valid address from testbed
+        source = self.validate_and_update_url(source, device=kwargs.get('device'),
+                                              vrf=vrf,
+                                              cache_ip=kwargs.get('cache_ip', True))
+        destination = self.validate_and_update_url(destination,
+                                                   device=kwargs.get('device'), vrf=vrf,
+                                                   cache_ip=kwargs.get('cache_ip', True))
 
         # Build command
         parsed_source = self.parse_url(source)

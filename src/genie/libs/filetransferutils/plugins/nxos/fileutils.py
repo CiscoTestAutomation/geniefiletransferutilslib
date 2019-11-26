@@ -3,9 +3,6 @@
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
 
-# filemode_to_mode
-from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
-
 # Dir parser
 try:
     from genie.libs.parser.nxos.show_platform import Dir
@@ -17,7 +14,7 @@ except ImportError:
 class FileUtils(FileUtilsDeviceBase):
 
     def copyfile(self, source, destination, timeout_seconds=300,
-        vrf='management', *args, **kwargs):
+        vrf='management', compact=False, *args, **kwargs):
         """ Copy a file to/from NXOS device
 
             Copy any file to/from a device to any location supported on the
@@ -66,11 +63,25 @@ class FileUtils(FileUtilsDeviceBase):
                 ...     timeout_seconds='300', device=device)
 
         """
-
+        # update source and destination with the valid address from testbed
+        source = self.validate_and_update_url(source, device=kwargs.get('device'),
+                                              vrf=vrf,
+                                              cache_ip=kwargs.get('cache_ip', True))
+        destination = self.validate_and_update_url(destination,
+                                                   device=kwargs.get('device'), vrf=vrf,
+                                                   cache_ip=kwargs.get('cache_ip', True))
         # copy flash:/memleak.tcl ftp://10.1.0.213//auto/tftp-ssr/memleak.tcl vrf management
         if vrf:
-            cmd = 'copy {f} {t} vrf {vrf}'.format(f=source, t=destination,
-                vrf=vrf)
+            # for n9k only
+            if compact:
+                cmd = 'copy {f} {t} compact vrf {vrf}'.format(f=source, t=destination, vrf=vrf)
+            else:
+                cmd = 'copy {f} {t} vrf {vrf}'.format(f=source, t=destination, vrf=vrf)
+        else:
+            if compact:
+                cmd = 'copy {f} {t} compact'.format(f=source, t=destination)
+            else:
+                cmd = 'copy {f} {t}'.format(f=source, t=destination)
 
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)

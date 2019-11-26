@@ -109,6 +109,7 @@ class test_filetransferutils(unittest.TestCase):
         /var/tmp/vsh/R3_nx-running-config                                               
                                                                                                                                                                                                                                                                                                                                     /var/tmp/vsh/R3_nx-running-config                                                                                                                                                                                                                                                                                                                                                                                                                                                            100%   14KB 355.1KB/s   00:00    
     '''}
+
     outputs = {}
     outputs['copy bootflash:/virtual-instance.conf '
         'ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management']\
@@ -120,8 +121,12 @@ class test_filetransferutils(unittest.TestCase):
     outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management'] = raw7
     outputs['copy running-config sftp://1.1.1.1//home/virl vrf management'] = raw8
 
+
     def mapper(self, key, timeout=None, reply= None, prompt_recovery=False):
         return self.outputs[key]
+
+    def is_valid_ip_mapper(self, ip, device=None, vrf=None, cache_ip=None):
+        return ip!='2.2.2.2'
 
     def test_copyfile(self):
 
@@ -142,6 +147,23 @@ class test_filetransferutils(unittest.TestCase):
         self.fu_device.copyfile(source='running-config',
             destination='sftp://1.1.1.1//home/virl',
             vrf='management', device=self.device)
+
+    def test_validate_and_update_url(self):
+        self.fu_device.is_valid_ip = Mock()
+        self.fu_device.is_valid_ip.side_effect = self.is_valid_ip_mapper
+        # set multiple ip for the server
+        self.device.testbed.servers.server_name['address']=['2.2.2.2', '1.1.1.1']
+        not_reachable_url = self.fu_device.validate_and_update_url('sftp://2.2.2.2//home/virl',
+                                                                    device=self.device)
+        reachable_url = self.fu_device.validate_and_update_url('sftp://1.1.1.1//home/virl',
+                                                                device=self.device)
+        servername_url = self.fu_device.validate_and_update_url('sftp://server_name//home/virl',
+                                                                device=self.device)
+        self.assertEqual(not_reachable_url, 'sftp://1.1.1.1//home/virl')
+        self.assertEqual(reachable_url, 'sftp://1.1.1.1//home/virl')
+        self.assertEqual(servername_url, 'sftp://1.1.1.1//home/virl')
+        self.device.testbed.servers.server_name['address'] = '1.1.1.1'
+
 
     def test_dir(self):
 

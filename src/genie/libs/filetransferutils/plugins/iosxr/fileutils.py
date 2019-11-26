@@ -3,9 +3,6 @@
 # Parent inheritance
 from .. import FileUtils as FileUtilsDeviceBase
 
-# filemode_to_mode
-from ats.utils.fileutils.plugins.linux.ftp.fileutils import filemode_to_mode
-
 # Dir parser
 try:
     from genie.libs.parser.iosxr.show_platform import Dir
@@ -70,6 +67,15 @@ class FileUtils(FileUtilsDeviceBase):
                 ...     destination='running-config',
                 ...     timeout_seconds='300', device=device)
         """
+
+        # update source and destination with the valid address from testbed
+        source = self.validate_and_update_url(source, device=kwargs.get('device'),
+                                              vrf=vrf,
+                                              cache_ip=kwargs.get('cache_ip', True))
+        destination = self.validate_and_update_url(destination,
+                                                   device=kwargs.get('device'), vrf=vrf,
+                                                   cache_ip=kwargs.get('cache_ip', True))
+
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)
         username, _ = self.get_auth(used_server)

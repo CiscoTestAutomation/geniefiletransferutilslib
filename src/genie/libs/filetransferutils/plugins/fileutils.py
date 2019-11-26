@@ -7,7 +7,7 @@ try:
     # Server FileUtils core implementation
 
     # filemode_to_mode
-    from ats.utils.fileutils.plugins.linux.ftp.fileutils import \
+    from ats.utils.fileutils.plugins.localhost.ftp.fileutils import \
         filemode_to_mode
 except ImportError:
     try:
@@ -15,7 +15,7 @@ except ImportError:
         # Server FileUtils core implementation
 
         # filemode_to_mode
-        from ats.utils.fileutils.plugins.linux.ftp.fileutils import \
+        from ats.utils.fileutils.plugins.localhost.ftp.fileutils import \
             filemode_to_mode
     except ImportError:
         # For apidoc building only
@@ -89,11 +89,10 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 ...     timeout_seconds='300', device=device)
         """
 
-        try:
-            self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
-                used_server=used_server, **kwargs)
-        except Exception as e:
-            raise type(e)('{}'.format(e))
+
+        self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
+            used_server=used_server, **kwargs)
+
 
     def parsed_dir(self, target, timeout_seconds, dir_output, *args, **kwargs):
         """ Retrieve filenames contained in a directory.
@@ -148,7 +147,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
         if 'device' in kwargs:
             device = kwargs['device']
         else:
-            raise AttributeError("Devisce object is missing, can't proceed with"
+            raise AttributeError("Device object is missing, can't proceed with"
                              " execution")
 
         # Call the parser

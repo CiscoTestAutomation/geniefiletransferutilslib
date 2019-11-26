@@ -1,12 +1,14 @@
 """ File utils base class for filetransferutils package. """
-# ipaddress
-import ipaddress
+
+import logging
+from functools import lru_cache
 
 # Urlparse
 from urllib.parse import urlparse
 
 # Unicon
 from unicon.eal.dialogs import Statement, Dialog
+from unicon.core.errors import SubCommandFailure
 
 # FileUtils Core
 try:
@@ -15,6 +17,11 @@ except ImportError:
     # For apidoc building only
     from unittest.mock import Mock; FileUtilsBase=Mock
 
+logger = logging.getLogger(__name__)
+
+# Error patterns to be caught when executing cli on device
+FAIL_MSG = ['failed to copy', 'Unable to find', 'Error opening', 'Error', 'operation failed',
+            'not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found']
 
 class FileUtils(FileUtilsBase):
 
@@ -143,26 +150,28 @@ class FileUtils(FileUtilsBase):
                       action='sendline({overwrite})'.format(overwrite='yes' if kwargs.get('overwrite', True) else 'no'),
                       loop_continue=True,
                       continue_timer=False),
+            Statement(pattern=r'.*Do you want to overwrite.*',
+                      action='sendline({overwrite})'.format(
+                          overwrite='y' if kwargs.get('overwrite', True) else 'n'),
+                      loop_continue=True,
+                      continue_timer=False),
+            Statement(pattern=r'Enter vrf.*',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False),
             ])
 
-        try:
-            output = device.execute(cli, timeout=timeout_seconds, reply=dialog, prompt_recovery=True)
+        output = device.execute(cli, timeout=timeout_seconds, reply=dialog, prompt_recovery=True)
 
-            # Error patterns to be caught when executing cli on device
-            fail_msg = ['failed to copy', 'Unable to find', 'Error opening',\
-                'Error', 'operation failed']
+        # Check if user passed extra error/fail patterns to be caught
+        if invalid:
+            FAIL_MSG.extend(invalid)
 
-            # Check if user passed extra error/fail patterns to be caught
-            if invalid:
-                fail_msg.extend(invalid)
-
-            # Checking for the error/fail patterns, raise an exception if found
-            for word in fail_msg:
-                if word in output:
-                    raise ValueError('Operation failed with the following '
-                                     'reason: {line}'.format(line=word))
-        except Exception as e:
-            raise type(e)('{}'.format(e))
+        # Checking for the error/fail patterns, raise an exception if found
+        for word in FAIL_MSG:
+            if word in output:
+                raise ValueError('Operation failed with the following '
+                                 'reason: {line}'.format(line=word))
 
         return output
 
@@ -200,8 +209,107 @@ class FileUtils(FileUtilsBase):
                   ...   'memleak.tcl'
 
         """
+        return urlparse(url)
+
+    @lru_cache(maxsize=32)
+    def is_valid_ip_cache(self, ip, device, vrf=None):
+        # check if ip is reachable from device by sending ping command,
+        # this one is cached that it only pings the first time
+        try:
+            if vrf:
+                device.ping(ip, vrf=vrf)
+            else:
+                device.ping(ip)
+            return True
+        except SubCommandFailure:
+            return False
+
+    def is_valid_ip_no_cache(self, ip, device, vrf=None):
+        # check if ip is reachable from device by sending ping command, not cached version
+        try:
+            if vrf:
+                device.ping(ip, vrf=vrf)
+            else:
+                device.ping(ip)
+            return True
+        except SubCommandFailure:
+            return False
+
+    def is_valid_ip(self, ip, device, vrf=None, cache_ip=True):
+        if cache_ip:
+            return self.is_valid_ip_cache(ip, device, vrf)
+        else:
+            return self.is_valid_ip_no_cache(ip, device, vrf)
+
+    def get_hostname(self, server_name_or_ip, device, vrf=None, cache_ip=True):
+        """ Get host name or address to connect to.
+            (inherited from pyats FileUtils with support for device connection)
+        Returns
+        -------
+            DNS name or IP address of server to connect to.
+
+            If IP address (single or list) specified in server block:
+            Return first reachable address (plugin determines reachability).
+
+            If no address specified, or if no address reachable:
+            Server name, if specified in server block, is next preferred.
+            If neither address nor server keys are present in server block,
+            or if the server could not be found in the testbed,
+            return the user-specified server name or IP address.
+
+        Raises
+        ------
+        Exception
+            if server details not found in testbed.
+
+        """
+        server_block = self.get_server_block(
+            server_name_or_ip = server_name_or_ip)
+
+        if server_block:
+            address = server_block.get('address', None)
+
+            if address:
+                if type(address) in (tuple, list):
+                    # a list of ips were provided - use the first valid one
+                    # that we can reach
+                    for addr in address:
+                        if self.is_valid_ip(addr, device, vrf=vrf, cache_ip=cache_ip):
+                            return addr
+                else:
+                    # not a list - return it
+                    return address
+
+            # no reachable address, or no address specified,
+            # default to server dns name or alias, or originally specified
+            # hostname if all server block lookups fail.
+            return server_block.get('server', server_name_or_ip)
+        else:
+            msg = "No details found in testbed for hostname {}.".\
+                format(server_name_or_ip)
+            if server_name_or_ip is not None:
+                logger.warning(msg)
+            else:
+                logger.debug(msg)
+
+        # Server block lookup has failed, return originally specified hostname
+        # (garbage in, garbage out).
+        return server_name_or_ip
+
+    def validate_and_update_url(self, url, device, vrf=None, cache_ip=True):
+        """Validate the url and replace the hostname/address with a
+            reachable address from the testbed"""
         parsed_url = urlparse(url)
-        return parsed_url
+
+        # if there is a host name, this means the address is remote
+        if parsed_url.hostname:
+            hostname = self.get_hostname(parsed_url.hostname, device, vrf=vrf, cache_ip=cache_ip)
+            return url.replace(parsed_url.hostname, hostname)
+
+        # just return url if it's local
+        else:
+            return url
+
 
     def get_server(self, source, destination=None):
         """ Get the server address from the provided URLs
@@ -212,7 +320,6 @@ class FileUtils(FileUtilsBase):
                   URL path of the from location
                 destination: `str`
                   URL path of the to location
-
 
             Returns
             -------
@@ -247,18 +354,14 @@ class FileUtils(FileUtilsBase):
             parsed = self.parse_url(item)
             # Validate parsed address is a valid IP address
             if parsed.netloc:
-                try:
-                    # remove tailing colon
-                    netloc = parsed.netloc.split(':')[0]
-                    ipaddress.ip_address(netloc)
-                    used_server = netloc
-                    break
-                except ValueError:
-                    continue
+                # remove tailing colon
+                netloc = parsed.netloc.split(':')[0]
+                used_server = netloc
+                break
 
         if not used_server:
             # If both URLS have no valid IP addres, raise an exception
-            raise Exception("No valid IP address has been detected in the "
+            raise Exception("No valid server address or hostname has been detected in the "
                 "passed URLS '{from_URL}' & '{to_URL}'".format(
                     from_URL=source, to_URL=destination))
 
