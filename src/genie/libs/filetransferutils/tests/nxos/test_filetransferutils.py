@@ -11,6 +11,9 @@ from ats.topology import Testbed
 from ats.topology import Device
 from ats.datastructures import AttrDict
 
+# unicon
+from unicon.core.errors import SubCommandFailure
+
 # filetransferutils
 try:
     from pyats.utils.fileutils import FileUtils
@@ -39,13 +42,13 @@ class test_filetransferutils(unittest.TestCase):
         'bootflash:/.swtam/', 'bootflash:/scripts/']
 
     # Mock device output
-    raw1 = {'execute.return_value': '''
+    raw1 = '''
         copy bootflash:/virtual-instance.conf ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management
         Enter username: rcpuser
         Password: 
         ***** Transfer of file Completed Successfully *****
         Copy complete.
-    '''}
+    '''
 
     raw2 = '''
         dir
@@ -65,34 +68,34 @@ class test_filetransferutils(unittest.TestCase):
          3537219584 bytes total
     '''
 
-    raw3 = {'execute.return_value': '''
+    raw3 = '''
         delete bootflash:new_file.tcl
         Do you want to delete "/new_file.tcl" ? (yes/no/abort)   [y] 
-    '''}
+    '''
 
-    raw4 = {'execute.return_value': '''
+    raw4 =  '''
         move bootflash:mem_leak.tcl new_file.tcl
-    '''}
+    '''
 
-    raw5 = {'execute.return_value': '''
+    raw5 = '''
         show clock > ftp://10.1.7.250//auto/tftp-ssr/show_clock vrf management
         Enter username: rcpuser
         Password: 
         ***** Transfer of file Completed Successfully *****
-    '''}
+    '''
 
     raw6 = {'futlinux.check_file.return_value': '',
         'futlinux.deletefile.return_value': ''}
 
-    raw7 = {'execute.return_value': '''
+    raw7 ='''
         copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management
         Trying to connect to tftp server......
         Connection to Server Established.
         [                         ]         0.50KB[#                        ]         4.50KB[##                       ]         8.50KB[###                      ]        12.50KB                                                                                    TFTP put operation was successful
         Copy complete, now saving to disk (please wait)...
         Copy complete.
-    '''}
-    raw8 = {'execute.return_value': '''
+    '''
+    raw8 = '''
         copy running-config sftp://1.1.1.1//home/virl vrf management
         Enter username: myuser
 
@@ -108,7 +111,16 @@ class test_filetransferutils(unittest.TestCase):
         Uploading /var/tmp/vsh/R3_nx-running-config to /home/virl/R3_nx-running-config
         /var/tmp/vsh/R3_nx-running-config                                               
                                                                                                                                                                                                                                                                                                                                     /var/tmp/vsh/R3_nx-running-config                                                                                                                                                                                                                                                                                                                                                                                                                                                            100%   14KB 355.1KB/s   00:00    
-    '''}
+    '''
+    raw9 = '''
+        copy bootflash:/virtual-instance.conf ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf vrf management
+        Enter username: rcpuser
+        ftp: connect: No route to host
+        ***** Transfer of file aborted, server not connected *****
+        Error during copy
+        ***** Transfer of file aborted *****
+
+    '''
 
     outputs = {}
     outputs['copy bootflash:/virtual-instance.conf '
@@ -120,7 +132,9 @@ class test_filetransferutils(unittest.TestCase):
     outputs['show clock > ftp://1.1.1.1//auto/tftp-ssr/show_clock vrf management'] = raw5
     outputs['copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py vrf management'] = raw7
     outputs['copy running-config sftp://1.1.1.1//home/virl vrf management'] = raw8
-
+    outputs['copy bootflash:/virtual-instance.conf '
+        'ftp://10.1.0.214//auto/tftp-ssr/virtual-instance.conf vrf management']\
+         = raw9
 
     def mapper(self, key, timeout=None, reply= None, prompt_recovery=False):
         return self.outputs[key]
@@ -137,6 +151,17 @@ class test_filetransferutils(unittest.TestCase):
         self.fu_device.copyfile(source='bootflash:/virtual-instance.conf',
             destination='ftp://10.1.0.213//auto/tftp-ssr/virtual-instance.conf',
             timeout_seconds='300', device=self.device)
+
+    def test_copyfile_exception(self):
+
+        self.device.execute = Mock()
+        self.device.execute.side_effect = self.mapper
+
+        # Call copyfiles
+        with self.assertRaises(SubCommandFailure):
+            self.fu_device.copyfile(source='bootflash:/virtual-instance.conf',
+                destination='ftp://10.1.0.214//auto/tftp-ssr/virtual-instance.conf',
+                timeout_seconds='300', device=self.device)
 
     def test_copyfile_sftp(self):
 

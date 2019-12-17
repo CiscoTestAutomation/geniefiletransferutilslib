@@ -14,7 +14,7 @@ except ImportError:
 class FileUtils(FileUtilsDeviceBase):
 
     def copyfile(self, source, destination, timeout_seconds=300,
-        vrf='management', compact=False, *args, **kwargs):
+        vrf='management', compact=False, use_kstack=False, *args, **kwargs):
         """ Copy a file to/from NXOS device
 
             Copy any file to/from a device to any location supported on the
@@ -30,6 +30,12 @@ class FileUtils(FileUtilsDeviceBase):
                     The number of seconds to wait before aborting the operation
                 vrf: `str`
                     Vrf to be used during copy operation
+                compact: `bool`
+                    Compress image during copy operation
+                use_kstack: `bool`
+                    Use faster version during copy operation
+                    Not supported with a file transfer protocol
+                    prompting for a username and password
 
             Returns
             -------
@@ -82,6 +88,10 @@ class FileUtils(FileUtilsDeviceBase):
                 cmd = 'copy {f} {t} compact'.format(f=source, t=destination)
             else:
                 cmd = 'copy {f} {t}'.format(f=source, t=destination)
+
+        # for n9k only
+        if use_kstack:
+            cmd += ' use-kstack'
 
         # Extract the server address to be used later for authentication
         used_server = self.get_server(source, destination)

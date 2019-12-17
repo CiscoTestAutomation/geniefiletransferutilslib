@@ -45,13 +45,13 @@ class test_filetransferutils(unittest.TestCase):
         'flash:/stby-vlan.dat', 'flash:/.installer']
 
     # Mock device output
-    raw1 = {'execute.return_value': '''
+    raw1 = '''
         copy flash:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl
         Address or name of remote host [1.1.1.1]? 
         Destination filename [/auto/tftp-ssr/memleak.tcl]? 
         !!
         104260 bytes copied in 0.396 secs (263283 bytes/sec)
-    '''}
+    '''
 
     raw2 = '''
         Directory of flash:/
@@ -82,32 +82,32 @@ class test_filetransferutils(unittest.TestCase):
         1621966848 bytes total (906104832 bytes free)
     '''
 
-    raw3 = {'execute.return_value': '''
+    raw3 ='''
         delete flash:memleak.tcl
         Delete filename [memleak.tcl]? 
         Delete flash:/memleak.tcl? [confirm]
-    '''}
+    '''
 
-    raw4 = {'execute.return_value': '''
+    raw4 = '''
         rename flash:memleak.tcl new_file.tcl
         Destination filename [new_file.tcl]? 
-    '''}
+    '''
 
-    raw5 = {'execute.return_value': '''
+    raw5 = '''
         show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock
         Writing /auto/tftp-ssr/show_clock 
-    '''}
+    '''
 
     raw6 = {'futlinux.check_file.return_value': '',
       'futlinux.deletefile.return_value': ''}
 
-    raw7 = {'execute.return_value': '''
+    raw7 = '''
          copy running-config tftp://10.1.7.250//auto/tftp-ssr/test_config.py
         Address or name of remote host [10.1.7.250]? 
         Destination filename [/auto/tftp-ssr/test_config.py]? 
         !!
         27092 bytes copied in 6.764 secs (4005 bytes/sec)
-    '''}
+    '''
 
     outputs = {}
     outputs['copy flash:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl']\

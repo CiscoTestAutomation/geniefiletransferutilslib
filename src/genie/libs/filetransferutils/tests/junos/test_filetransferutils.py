@@ -31,12 +31,12 @@ class test_filetransferutils(unittest.TestCase):
     )
 
     # Mock device output
-    raw1 = {'execute.return_value': '''
+    raw1 = '''
             file copy golden_config ftp://myuser@1.1.1.1:/test/ 
             Password for myuser@1.1.1.1:
             ftp://myuser@1.1.1.1:/test/golden_config     100% of 3040  B   11 MBps
 
-    '''}
+    '''
 
     outputs = {}
     outputs['file copy golden_config ftp://myuser@1.1.1.1:/test/']\

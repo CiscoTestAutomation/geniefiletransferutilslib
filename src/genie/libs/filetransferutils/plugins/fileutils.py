@@ -151,11 +151,9 @@ class FileUtils(FileUtilsCommonDeviceBase):
                              " execution")
 
         # Call the parser
-        try:
-            obj = dir_output(device=device)
-            parsed_output = obj.parse()
-        except Exception as e:
-            raise type(e)('{}'.format(e))
+
+        obj = dir_output(device=device)
+        parsed_output = obj.parse()
 
         return parsed_output
 
@@ -255,11 +253,9 @@ class FileUtils(FileUtilsCommonDeviceBase):
         # delete flash:memleak.tcl
         cmd = 'delete {f}'.format(f=target)
 
-        try:
-            self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
-                **kwargs)
-        except Exception as e:
-            raise type(e)('{}'.format(e))
+
+        self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,**kwargs)
+
 
     def renamefile(self, source, destination, timeout_seconds, cmd,
         *args, **kwargs):
@@ -301,11 +297,7 @@ class FileUtils(FileUtilsCommonDeviceBase):
 
         """
 
-        try:
-            self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
-                **kwargs)
-        except Exception as e:
-            raise type(e)('{}'.format(e))
+        self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,**kwargs)
 
 
     def chmod(self, target, mode, timeout_seconds, *args, **kwargs):
@@ -460,8 +452,6 @@ class FileUtils(FileUtilsCommonDeviceBase):
                 ...     timeout_seconds='300', device=device)
         """
 
-        try:
-            self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
-                used_server=used_server, **kwargs)
-        except Exception as e:
-            raise type(e)('{}'.format(e))
+
+        self.send_cli_to_device(cli=cmd, timeout_seconds=timeout_seconds,
+            used_server=used_server, **kwargs)

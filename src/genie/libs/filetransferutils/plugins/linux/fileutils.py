@@ -5,9 +5,6 @@ class FileUtils(FileUtilsDeviceBase):
     def copyfile(self, source, destination, timeout_seconds=300, vrf=None, *args,
                  **kwargs):
         ''' Copy a file to/from linux device '''
-        # update source and destination with the valid address from testbed
-        source = self.validate_and_update_url(source, device=kwargs.get('device'), vrf=vrf)
-        destination = self.validate_and_update_url(destination, device=kwargs.get('device'), vrf=vrf)
 
         used_server = self.get_server(source, destination)
         username, _ = self.get_auth(used_server)
@@ -23,7 +20,9 @@ class FileUtils(FileUtilsDeviceBase):
                 elif '{}:'.format(protocol) in destination:
                     destination = '{username}@{url}'.format(username=username, url=destination)
 
-                cmd = '{protocol} {s} {d}'.format(protocol=protocol,
+                # still use scp if user provided sftp because sftp is interactive
+                # will change this if one day we can support sftp on linux
+                cmd = 'scp {s} {d}'.format(protocol=protocol,
                                                   s=source.replace('{}://'.format(protocol), '').replace('//', ':/'),
                                                   d=destination.replace('{}://'.format(protocol), '').replace('//', ':/'))
                 break

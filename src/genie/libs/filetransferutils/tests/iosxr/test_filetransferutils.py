@@ -41,13 +41,13 @@ class test_filetransferutils(unittest.TestCase):
 
 
     # Mock device output
-    raw1 = {'execute.return_value': '''
+    raw1 = '''
         copy disk0:/memleak.tcl ftp://1.1.1.1//auto/tftp-ssr/memleak.tcl
         Address or name of remote host [1.1.1.1]? 
         Destination filename [/auto/tftp-ssr/memleak.tcl]? 
         !!
         104260 bytes copied in 0.396 secs (263283 bytes/sec)
-    '''}
+    '''
 
     raw2 = '''
         dir
@@ -72,20 +72,20 @@ class test_filetransferutils(unittest.TestCase):
         1012660 kbytes total (938376 kbytes free)
     '''
 
-    raw3 = {'execute.return_value': '''
+    raw3 = '''
         delete disk0:fake_config_2.tcl
         Delete disk0:fake_config_2.tcl[confirm]
-    '''}
+    '''
 
-    raw4 = {'execute.return_value': '''
+    raw4 = '''
         show clock | redirect ftp://1.1.1.1//auto/tftp-ssr/show_clock
         Writing /auto/tftp-ssr/show_clock 
-    '''}
+    '''
 
     raw5 = {'futlinux.check_file.return_value': '',
         'futlinux.deletefile.return_value': ''}
 
-    raw6 = {'execute.return_value':'''
+    raw6 = '''
         copy running-config ftp://10.1.6.242//auto/tftp-ssr/fake_config_2.tcl
         Host name or IP address (control-c to abort): [10.1.6.242;default]?
         Destination username: []?rcpuser
@@ -94,9 +94,9 @@ class test_filetransferutils(unittest.TestCase):
         Building configuration.
         349 lines built in 1 second
         [OK]
-    '''}
+    '''
 
-    raw7 = {'execute.return_value': '''
+    raw7 =  '''
             sftp running-config myuser@1.1.1.1:/home/virl vrf management
             Thu Oct 10 15:45:18.989 UTC
             Connecting to 172.16.1.250...
@@ -107,7 +107,7 @@ class test_filetransferutils(unittest.TestCase):
               yes/no]: yes
               Transferred 11332 Bytes
               11332 bytes copied in 0 sec (251822)bytes/sec
-    '''}
+    '''
     outputs = {}
     outputs['copy disk0:/fake_config_2.tcl '
         'ftp://1.1.1.1//auto/tftp-ssr/fake_config_2.tcl'] = raw1

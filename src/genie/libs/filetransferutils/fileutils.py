@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 # Error patterns to be caught when executing cli on device
 FAIL_MSG = ['failed to copy', 'Unable to find', 'Error opening', 'Error', 'operation failed',
-            'not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found']
+            'Compaction is not supported', 'Copy failed', 'No route to host', 'Connection timed out', 'not found', 'No space']
 
 class FileUtils(FileUtilsBase):
 
@@ -159,6 +159,10 @@ class FileUtils(FileUtilsBase):
                       action='sendline()',
                       loop_continue=True,
                       continue_timer=False),
+            Statement(pattern=r'.*This is a directory. +Do you want to continue.*',
+                      action='sendline()',
+                      loop_continue=True,
+                      continue_timer=False)
             ])
 
         output = device.execute(cli, timeout=timeout_seconds, reply=dialog, prompt_recovery=True)
@@ -168,10 +172,10 @@ class FileUtils(FileUtilsBase):
             FAIL_MSG.extend(invalid)
 
         # Checking for the error/fail patterns, raise an exception if found
-        for word in FAIL_MSG:
-            if word in output:
-                raise ValueError('Operation failed with the following '
-                                 'reason: {line}'.format(line=word))
+        for line in output.splitlines():
+            for word in FAIL_MSG:
+                if word in line:
+                    raise SubCommandFailure('Error message caught in the following line: "{line}"'.format(line=line))
 
         return output
 
