@@ -1,3 +1,9 @@
+# [DEPRECATION NOTICE]
+
+As of release v20.1, this repository is effectively deprecated.
+The contents are moved into https://github.com/CiscoTestAutomation/genielibs instead.
+
+----------------------------------------------------------------------------
 # Genie geniefiletransferutilslib
 
 Genie is both a library framework and a test harness that facilitates rapid
